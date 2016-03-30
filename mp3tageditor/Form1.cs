@@ -51,7 +51,7 @@ namespace mp3tageditor
 					TagLib.Properties mp3prop = mp3.Properties;
 
 					//listviewに追加するアイテムを用意する
-					//ファイル名|パス|タグから読み込んだ曲名|曲の長さ
+					//上から ファイル名|パス|タグから読み込んだ曲名|曲の長さ
 					string[] items =
 						{ Mp3Paths[i].Substring(Mp3Paths[i].LastIndexOf('\\') + 1),
 							Mp3Paths[i],
@@ -86,14 +86,13 @@ namespace mp3tageditor
 						TagLib.IPicture Artworks = mp3tags.Pictures[0];
 						ms = new MemoryStream(Artworks.Data.Data);
 						ms.Seek(0, SeekOrigin.Begin);
-
 						//画像をリサイズ
 						Bitmap canvas = new Bitmap(pictureBox1.Width, pictureBox1.Height);
 						Graphics g = Graphics.FromImage(canvas);
 						g.DrawImage(Image.FromStream(ms), 0, 0, pictureBox1.Width, pictureBox1.Height);
 						g.Dispose();
-
-						pictureBox1.Image = canvas;//ImageResize(Image.FromStream(ms), 400, 400);
+						
+                        pictureBox1.Image = ImageResize(canvas, pictureBox1.Size);
 
 						Image backupimg;
 						using(Image imgsrc = Image.FromStream(ms))
@@ -115,15 +114,16 @@ namespace mp3tageditor
 
 		private void pictureBox1_Click(object sender, EventArgs e)
 		{
-			ImageShow(null, Image.FromFile(TempImageFilePath));
+			if(listView1.SelectedItems.Count > 0)
+				ImageShow(null, Image.FromFile(TempImageFilePath));
 		}
 
 		/// <summary>
 		/// 引数urlから画像をダウンロードし、新しいフォームに表示する。
 		/// どちらかの引数は必ず指定しなければならない。どちらも指定した場合、第一引数を優先して表示する。
 		/// </summary>
-		/// <param name="url">画像が格納されたURLを指定。省略可。string型</param>
-		/// <param name="img">画像が格納されたImageを指定。省略可。Image型</param>
+		/// <param name="url">画像が格納されたURLを指定。省略可。</param>
+		/// <param name="img">画像が格納されたImageを指定。省略可。</param>
 		private void ImageShow(string url = null, Image img = null)
 		{
 			Image imgdata = null;
@@ -143,49 +143,46 @@ namespace mp3tageditor
 
 			//フォーム作成
 			Form imageshow = new Form();
+			Size windowsize = new Size(500, 500) - new Size(16, 38);
 			imageshow.StartPosition = FormStartPosition.Manual;
 			imageshow.Location = new Point(this.Left + this.Width, this.Top);
-			Size windowsize = new Size(400, 400);
+			imageshow.BackColor = Color.Black;
+			imageshow.Text = "Artwork Viewer";
+			imageshow.Size = windowsize + new Size(16, 38);
+			imageshow.SizeChanged += Imageshow_SizeChanged;
+
 			//画像表示のためのpictureboxを作成
 			PictureBox pb = new PictureBox();
-			Bitmap canvas = new Bitmap(windowsize.Width, windowsize.Height);
-			////リサイズするサイズを設定
-			//Rectangle destrect = new Rectangle(0, 0, windowsize.Width, windowsize.Height);
-			////解像度をオリジナルの画像と同等に設定
-			//canvas.SetResolution(imgdata.HorizontalResolution, imgdata.VerticalResolution);
-			using(Graphics g = Graphics.FromImage(canvas))
-			{
-				////高画質化
-				//g.CompositingMode = CompositingMode.SourceCopy;
-				//g.CompositingQuality = CompositingQuality.HighQuality;
-				//g.InterpolationMode = InterpolationMode.Bicubic;
-				//g.SmoothingMode = SmoothingMode.HighQuality;
-				//g.PixelOffsetMode = PixelOffsetMode.HighQuality;x
+			pictureBox1.Size = windowsize;
 
-				//using(ImageAttributes wrapmode = new ImageAttributes())
-				//{
-				//	wrapmode.SetWrapMode(WrapMode.TileFlipXY);
-				//	g.DrawImage(imgdata, destrect, 0, 0, windowsize.Width, windowsize.Height, GraphicsUnit.Pixel, wrapmode);
-				//}
-				g.DrawImage(imgdata, 0, 0, windowsize.Width, windowsize.Height);
-			}
-			
 			//先ほどダウンロードした画像をセット or ロードした画像をセット
-			pb.Image = canvas;
+			pb.Image = ImageResize(imgdata, windowsize);
 			pb.SizeMode = PictureBoxSizeMode.AutoSize;
-			
-			imageshow.Size = pb.Size + new Size(0, 28);
+
 			//pictureboxコントロールをフォームに追加
 			imageshow.Controls.Add(pb);
 			imageshow.Show(this);
 		}
 
-		private Image ImageResize(Image img, int width, int height)
+		private void Imageshow_SizeChanged(object sender, EventArgs e)
 		{
-			Console.WriteLine(width + " " + height);
-			Bitmap canvas = new Bitmap(width, height);
+			Form test = (Form)sender;
+            Console.WriteLine(test.Size);
+		}
+
+
+
+		/// <summary>
+		/// 画像をリサイズする。
+		/// </summary>
+		/// <param name="img">リサイズしたい画像を指定。</param>
+		/// <param name="size">リサイズしたいサイズを指定。</param>
+		/// <returns>指定されたサイズで調整された画像を返す。</returns>
+		private Image ImageResize(Image img, Size size)
+		{
+			Bitmap canvas = new Bitmap(size.Width, size.Height);
 			Graphics g = Graphics.FromImage(canvas);
-			g.DrawImage(img, 0, 0, width, height);
+			g.DrawImage(img, 0, 0, size.Width, size.Height);
 			g.Dispose();
 
 			return canvas;
@@ -193,7 +190,7 @@ namespace mp3tageditor
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			ImageShow("https://pbs.twimg.com/profile_images/585714416643088384/oNc3OwuT.png");
+			ImageShow("http://vignette3.wikia.nocookie.net/akuma-high-next-generation/images/f/fc/Nepgear_photo.jpg/revision/latest?cb=20130314231032");
 		}
 
 		private static string tempimagefilepath = Path.GetTempFileName();
