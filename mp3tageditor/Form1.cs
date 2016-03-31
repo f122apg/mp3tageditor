@@ -14,6 +14,18 @@ namespace mp3tageditor
 		{
 			InitializeComponent();
 		}
+
+		private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			//フォームを閉じるときにtmpファイルを全て削除する
+			pictureBox1.Image = null;
+			string[] tmpfilepaths = Directory.GetFiles(".\\", "tmp*.png");
+			foreach(string filepath in tmpfilepaths )
+			{
+				File.Delete(filepath);
+			}
+		}
+
 		private static int counter = 0;
 
 		private void listView1_DragEnter(object sender, DragEventArgs e)
@@ -59,7 +71,6 @@ namespace mp3tageditor
 							mp3tags.Title,
 							new DateTime(0).Add(mp3prop.Duration).ToString("HH:mm:ss")
 						};
-					Console.WriteLine(Mp3Paths[i]);
 
 					//listviewにアイテムを追加
 					listView1.Items.Add(new ListViewItem(items));
@@ -239,7 +250,6 @@ namespace mp3tageditor
 			set { cacheimagefilepaths = value; }
 			get { return cacheimagefilepaths; }
 		}
-
 	}
 }
 
