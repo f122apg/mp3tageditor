@@ -143,7 +143,7 @@
 			// label4
 			// 
 			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(247, 547);
+			this.label4.Location = new System.Drawing.Point(275, 547);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(40, 12);
 			this.label4.TabIndex = 7;
@@ -152,20 +152,20 @@
 			// Datasize_label
 			// 
 			this.Datasize_label.AutoSize = true;
-			this.Datasize_label.Location = new System.Drawing.Point(321, 528);
+			this.Datasize_label.Location = new System.Drawing.Point(312, 528);
 			this.Datasize_label.Name = "Datasize_label";
-			this.Datasize_label.Size = new System.Drawing.Size(27, 12);
+			this.Datasize_label.Size = new System.Drawing.Size(21, 12);
 			this.Datasize_label.TabIndex = 8;
-			this.Datasize_label.Text = "NaN";
+			this.Datasize_label.Text = "NA";
 			// 
 			// Imagesize_label
 			// 
 			this.Imagesize_label.AutoSize = true;
-			this.Imagesize_label.Location = new System.Drawing.Point(293, 547);
+			this.Imagesize_label.Location = new System.Drawing.Point(312, 547);
 			this.Imagesize_label.Name = "Imagesize_label";
-			this.Imagesize_label.Size = new System.Drawing.Size(27, 12);
+			this.Imagesize_label.Size = new System.Drawing.Size(21, 12);
 			this.Imagesize_label.TabIndex = 9;
-			this.Imagesize_label.Text = "NaN";
+			this.Imagesize_label.Text = "NA";
 			// 
 			// Form1
 			// 
