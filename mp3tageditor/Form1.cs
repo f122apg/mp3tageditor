@@ -17,16 +17,22 @@ namespace mp3tageditor
 
 		private void Form1_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			//フォームを閉じるときにtmpファイルを全て削除する
-			pictureBox1.Image = null;
+			//リソースを解放
+			pictureBox1.Dispose();
+			//tmpファイルのロックを解除
+			pictureBox1 = null;
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
 			string[] tmpfilepaths = Directory.GetFiles(".\\", "tmp*.png");
-			foreach(string filepath in tmpfilepaths )
+
+			//フォームを閉じるときにtmpファイルを全て削除する
+			foreach(string filepath in tmpfilepaths)
 			{
 				File.Delete(filepath);
 			}
 		}
-
-		private static int counter = 0;
 
 		private void listView1_DragEnter(object sender, DragEventArgs e)
 		{
@@ -52,14 +58,16 @@ namespace mp3tageditor
 		private void listView1_DragDrop(object sender, DragEventArgs e)
 		{
 			string[] Mp3Paths = (string[])e.Data.GetData(DataFormats.FileDrop);
+			int tmpfileslen = TempImageFilePaths.ToArray().GetLength(0);
+			List<TagLib.Tag> mp3tags = new List<TagLib.Tag>();
 
-			for(int i = 0; i < Mp3Paths.Length; i ++)
+			for(int i = 0; i < Mp3Paths.Length; i++)
 			{
 				//Mp3ファイルを開く
 				using(TagLib.File mp3 = TagLib.File.Create(Mp3Paths[i]))
 				{
 					//Mp3ファイルのTagを取得
-					TagLib.Tag mp3tags = mp3.Tag;
+					mp3tags.Add(mp3.Tag);
 					//Mp3ファイルのプロパティを取得
 					TagLib.Properties mp3prop = mp3.Properties;
 
@@ -68,40 +76,50 @@ namespace mp3tageditor
 					string[] items =
 						{ Mp3Paths[i].Substring(Mp3Paths[i].LastIndexOf('\\') + 1),
 							Mp3Paths[i],
-							mp3tags.Title,
+							mp3tags[i].Title,
 							new DateTime(0).Add(mp3prop.Duration).ToString("HH:mm:ss")
 						};
 
 					//listviewにアイテムを追加
 					listView1.Items.Add(new ListViewItem(items));
+				}
+			}
 
-					//ドラッグアンドドロップされた曲のアートワークを一括で取得
-					MemoryStream ms;
-					try
+			int secondfor_zero_to_n_counter = 0;
+
+			for(int j = tmpfileslen; j < tmpfileslen + Mp3Paths.Length; j++)
+			{
+				//ドラッグアンドドロップされた曲のアートワークを一括で取得
+				MemoryStream ms;
+				try
+				{
+					//アートワークの取得
+					TagLib.IPicture Artworks = mp3tags[secondfor_zero_to_n_counter].Pictures[0];
+					using(ms = new MemoryStream(Artworks.Data.Data))
 					{
-						//アートワークの取得
-						TagLib.IPicture Artworks = mp3tags.Pictures[0];
-						ms = new MemoryStream(Artworks.Data.Data);
 						ms.Seek(0, SeekOrigin.Begin);
 						Image artworkimg = Image.FromStream(ms);
 
 						Guid guid = Guid.NewGuid();
 						//pictureboxに表示するために一時的に画像ファイルとして保存する
 						artworkimg.Save("tmp" + guid.ToString() + ".png", ImageFormat.Png);
-						TempImageFilePaths.Add(new List<string> { listView1.Items[counter].SubItems[1].Text,
+						TempImageFilePaths.Add(new List<string> { listView1.Items[j].SubItems[1].Text,
 							"tmp" + guid.ToString() + ".png" });
 						//ファイルに属性hiddinを追加
-						if(TempImageFilePaths[counter][1] != null)
-							File.SetAttributes(TempImageFilePaths[counter][1], FileAttributes.Hidden);
+						if(TempImageFilePaths[j][1] != null)
+							File.SetAttributes(TempImageFilePaths[j][1], FileAttributes.Hidden);
 					}
-					//アートワークが設定されていない場合
-					catch(IndexOutOfRangeException)
-					{
-						TempImageFilePaths.Add(new List<string> { listView1.Items[counter].SubItems[1].Text, null});
-                    }
-					counter++;
 				}
+				//アートワークが設定されていない場合
+				catch(IndexOutOfRangeException)
+				{
+					TempImageFilePaths.Add(new List<string> { listView1.Items[j].SubItems[1].Text, null});
+                }
+
+				secondfor_zero_to_n_counter++;
 			}
+
+			mp3tags.Clear();
 		}
 
 		private void listView1_SelectedIndexChanged(object sender, EventArgs e)
@@ -141,8 +159,8 @@ namespace mp3tageditor
 						else if(TempImageFilePaths[i][1] == null)
 						{
 							pictureBox1.Image = null;
-							Datasize_label.Text = "NA";
-							Imagesize_label.Text = "NA";
+							Datasize_label.Text = "N/A";
+							Imagesize_label.Text = "N/A";
 							break;
 						}
 					}
@@ -225,12 +243,7 @@ namespace mp3tageditor
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			//ImageShow("http://ecx.images-amazon.com/images/I/61EkLn43QvL.jpg");
-			for(int i = 0; i < TempImageFilePaths.ToArray().GetLength(0); i ++)
-			{
-				Console.WriteLine("["+i+"][0]" + TempImageFilePaths[i][0]);
-				Console.WriteLine("["+i+"][1]" + TempImageFilePaths[i][1] + "\n");
-			}
+			Console.WriteLine("files:" + Directory.GetFiles(".\\", "tmp*.png").Length);
 		}
 
 		/// <summary>
