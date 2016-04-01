@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			this.listView1 = new System.Windows.Forms.ListView();
 			this.Filename_columnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.Path_columnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -42,7 +43,10 @@
 			this.label4 = new System.Windows.Forms.Label();
 			this.Datasize_label = new System.Windows.Forms.Label();
 			this.Imagesize_label = new System.Windows.Forms.Label();
+			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.Delete_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+			this.contextMenuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// listView1
@@ -53,6 +57,7 @@
             this.Path_columnHeader,
             this.Songname_columnHeader,
             this.Songtime_columnHeader});
+			this.listView1.ContextMenuStrip = this.contextMenuStrip1;
 			this.listView1.FullRowSelect = true;
 			this.listView1.GridLines = true;
 			this.listView1.Location = new System.Drawing.Point(12, 12);
@@ -167,6 +172,20 @@
 			this.Imagesize_label.TabIndex = 9;
 			this.Imagesize_label.Text = "N/A";
 			// 
+			// contextMenuStrip1
+			// 
+			this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.Delete_ToolStripMenuItem});
+			this.contextMenuStrip1.Name = "contextMenuStrip1";
+			this.contextMenuStrip1.Size = new System.Drawing.Size(153, 48);
+			// 
+			// Delete_ToolStripMenuItem
+			// 
+			this.Delete_ToolStripMenuItem.Name = "Delete_ToolStripMenuItem";
+			this.Delete_ToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.Delete_ToolStripMenuItem.Text = "削除(&D)";
+			this.Delete_ToolStripMenuItem.Click += new System.EventHandler(this.Delete_ToolStripMenuItem_Click);
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -186,6 +205,7 @@
 			this.Text = "Form1";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+			this.contextMenuStrip1.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -207,6 +227,8 @@
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.Label Datasize_label;
 		private System.Windows.Forms.Label Imagesize_label;
+		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+		private System.Windows.Forms.ToolStripMenuItem Delete_ToolStripMenuItem;
 	}
 }
 

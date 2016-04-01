@@ -13,10 +13,22 @@ namespace mp3tageditor
 		public Form1()
 		{
 			InitializeComponent();
+
+			//初期化処理
+			string[] tmpfilepaths = Directory.GetFiles(".\\", "tmp*.png");
+
+			//tmpファイルを全て削除する
+			foreach(string filepath in tmpfilepaths)
+			{
+				File.Delete(filepath);
+			}
 		}
 
 		private void Form1_FormClosing(object sender, FormClosingEventArgs e)
 		{
+			//*********************************
+			//************ 終了処理 *************
+			//*********************************
 			//リソースを解放
 			pictureBox1.Dispose();
 			//tmpファイルのロックを解除
@@ -27,7 +39,7 @@ namespace mp3tageditor
 
 			string[] tmpfilepaths = Directory.GetFiles(".\\", "tmp*.png");
 
-			//フォームを閉じるときにtmpファイルを全て削除する
+			//tmpファイルを全て削除する
 			foreach(string filepath in tmpfilepaths)
 			{
 				File.Delete(filepath);
@@ -58,7 +70,7 @@ namespace mp3tageditor
 		private void listView1_DragDrop(object sender, DragEventArgs e)
 		{
 			string[] Mp3Paths = (string[])e.Data.GetData(DataFormats.FileDrop);
-			int tmpfileslen = TempImageFilePaths.ToArray().GetLength(0);
+			int tmpfileslen = Math.Abs(Directory.GetFiles(".\\", "tmp*.png").Length - IgnoreImageFileCounter);
 			List<TagLib.Tag> mp3tags = new List<TagLib.Tag>();
 
 			for(int i = 0; i < Mp3Paths.Length; i++)
@@ -84,7 +96,7 @@ namespace mp3tageditor
 					listView1.Items.Add(new ListViewItem(items));
 				}
 			}
-
+			
 			int secondfor_zero_to_n_counter = 0;
 
 			for(int j = tmpfileslen; j < tmpfileslen + Mp3Paths.Length; j++)
@@ -108,6 +120,8 @@ namespace mp3tageditor
 						//ファイルに属性hiddinを追加
 						if(TempImageFilePaths[j][1] != null)
 							File.SetAttributes(TempImageFilePaths[j][1], FileAttributes.Hidden);
+
+						artworkimg.Dispose();
 					}
 				}
 				//アートワークが設定されていない場合
@@ -168,6 +182,29 @@ namespace mp3tageditor
 			}
 		}
 
+		//リストから曲を削除
+		private void Delete_ToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if(listView1.SelectedItems.Count > 0)
+			{
+				if(MessageBox.Show("ファイル名：" + listView1.SelectedItems[0].SubItems[1].Text + " をリストから削除しますか？",
+					"曲の削除確認",
+					MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+				{
+					pictureBox1.Image = null;
+					Datasize_label.Text = "N/A";
+					Imagesize_label.Text = "N/A";
+
+					//削除された曲のtmpファイルの除外をするためにインクリメント
+					IgnoreImageFileCounter++;
+					TempImageFilePaths.RemoveAt(listView1.SelectedItems[0].Index);
+					listView1.Items.RemoveAt(listView1.SelectedItems[0].Index);
+				}
+			}
+			else
+				MessageBox.Show("曲を選択してください。", "削除エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+		}
+
 		private void pictureBox1_Click(object sender, EventArgs e)
 		{
 			if(listView1.SelectedItems.Count > 0)
@@ -200,7 +237,7 @@ namespace mp3tageditor
 					imgdata = Image.FromStream(imgstream);
 			}
 			else
-				imgdata = img;
+				imgdata = (Image)img.Clone();
 
 			//フォーム作成
 			Form imageshow = new Form();
@@ -260,8 +297,16 @@ namespace mp3tageditor
 		private static List<string> cacheimagefilepaths = new List<string>();
 		public static List<string> CacheImageFilePaths
 		{
-			set { cacheimagefilepaths = value; }
 			get { return cacheimagefilepaths; }
+		}
+		/// <summary>
+		/// 曲をリストから削除した時にtmpファイルを除外するためのカウンター。
+		/// </summary>
+		private static int ignoreimagefilecounter = 0;
+		public static int IgnoreImageFileCounter
+		{
+			set { ignoreimagefilecounter = value; }
+			get { return ignoreimagefilecounter; }
 		}
 	}
 }
