@@ -33,6 +33,7 @@ namespace mp3tageditor
 			pictureBox1.Dispose();
 			//tmpファイルのロックを解除
 			pictureBox1 = null;
+			//ガベージコレクション
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 			GC.Collect();
@@ -77,7 +78,6 @@ namespace mp3tageditor
 			int mp3tags_index_counter = 0;
 			//mp3ファイルのタグを読み込んだ物を入れる
 			List<TagLib.Tag> mp3tags = new List<TagLib.Tag>();
-
 
 			for(int i = 0; i < Mp3Paths.Length; i++)
 			{
@@ -212,9 +212,7 @@ namespace mp3tageditor
 					pictureBox1.Image = null;
 					Datasize_label.Text = "N/A";
 					Imagesize_label.Text = "N/A";
-
-					//削除された曲のtmpファイルの除外をするためにインクリメント
-					IgnoreImageFileCounter++;
+					
 					TempImageFilePaths.RemoveAt(listView1.SelectedItems[0].Index);
 					listView1.Items.RemoveAt(listView1.SelectedItems[0].Index);
 				}
@@ -316,15 +314,6 @@ namespace mp3tageditor
 		public static List<string> CacheImageFilePaths
 		{
 			get { return cacheimagefilepaths; }
-		}
-		/// <summary>
-		/// 曲をリストから削除した時にtmpファイルを除外するためのカウンター。
-		/// </summary>
-		private static int ignoreimagefilecounter = 0;
-		public static int IgnoreImageFileCounter
-		{
-			set { ignoreimagefilecounter = value; }
-			get { return ignoreimagefilecounter; }
 		}
 	}
 }
