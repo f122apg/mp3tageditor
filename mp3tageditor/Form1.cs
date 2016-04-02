@@ -69,12 +69,32 @@ namespace mp3tageditor
 
 		private void listView1_DragDrop(object sender, DragEventArgs e)
 		{
+			//ドラッグアンドドロップされたmp3ファイルのパスを入れる
 			string[] Mp3Paths = (string[])e.Data.GetData(DataFormats.FileDrop);
-			int tmpfileslen = Math.Abs(Directory.GetFiles(".\\", "tmp*.png").Length - IgnoreImageFileCounter);
+			//ドラッグアンドドロップされる前のListViewのItem数
+			int ListViewBeforeItemNum = listView1.Items.Count;
+			//mp3tagsの添字を参照するためのカウンタ
+			int mp3tags_index_counter = 0;
+			//mp3ファイルのタグを読み込んだ物を入れる
 			List<TagLib.Tag> mp3tags = new List<TagLib.Tag>();
+
 
 			for(int i = 0; i < Mp3Paths.Length; i++)
 			{
+				//現在のループをスキップするかのフラグ
+				bool ForSkipflag = false;
+
+				//ドラッグアンドドロップされたファイル郡がすでにlistviewに追加されているファイルかどうか
+				for(int k = 0; k < listView1.Items.Count; k++)
+				{
+					//すでにlistviewに追加されていたら、現在のループを中断し、次のループへと移行する
+					if(Mp3Paths[i] == listView1.Items[k].SubItems[1].Text)
+						ForSkipflag = true;
+				}
+				
+				if(ForSkipflag)
+					continue;
+
 				//Mp3ファイルを開く
 				using(TagLib.File mp3 = TagLib.File.Create(Mp3Paths[i]))
 				{
@@ -88,25 +108,25 @@ namespace mp3tageditor
 					string[] items =
 						{ Mp3Paths[i].Substring(Mp3Paths[i].LastIndexOf('\\') + 1),
 							Mp3Paths[i],
-							mp3tags[i].Title,
+							mp3tags[mp3tags_index_counter].Title,
 							new DateTime(0).Add(mp3prop.Duration).ToString("HH:mm:ss")
 						};
 
 					//listviewにアイテムを追加
 					listView1.Items.Add(new ListViewItem(items));
+
+					mp3tags_index_counter++;
 				}
 			}
-			
-			int secondfor_zero_to_n_counter = 0;
 
-			for(int j = tmpfileslen; j < tmpfileslen + Mp3Paths.Length; j++)
+			for(int j = ListViewBeforeItemNum; j < listView1.Items.Count; j++)
 			{
 				//ドラッグアンドドロップされた曲のアートワークを一括で取得
 				MemoryStream ms;
 				try
 				{
 					//アートワークの取得
-					TagLib.IPicture Artworks = mp3tags[secondfor_zero_to_n_counter].Pictures[0];
+					TagLib.IPicture Artworks = mp3tags[j - ListViewBeforeItemNum].Pictures[0];
 					using(ms = new MemoryStream(Artworks.Data.Data))
 					{
 						ms.Seek(0, SeekOrigin.Begin);
@@ -129,8 +149,6 @@ namespace mp3tageditor
 				{
 					TempImageFilePaths.Add(new List<string> { listView1.Items[j].SubItems[1].Text, null});
                 }
-
-				secondfor_zero_to_n_counter++;
 			}
 
 			mp3tags.Clear();
@@ -143,9 +161,9 @@ namespace mp3tageditor
 				//listviewで選択されているmp3ファイルを開く
 				using(TagLib.File mp3 = TagLib.File.Create(listView1.SelectedItems[0].SubItems[1].Text))
 				{
-					TagLib.Tag mp3tags = mp3.Tag;
+					TagLib.Tag mp3tag = mp3.Tag;
 
-					foreach(string artist in mp3tags.Performers)
+					foreach(string artist in mp3tag.Performers)
 					{
 						//アーティストを取得
 						Artist_textbox.Text = artist;
