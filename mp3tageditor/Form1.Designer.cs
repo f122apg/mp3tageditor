@@ -34,7 +34,9 @@
 			this.Path_columnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.Songname_columnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.Songtime_columnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-			this.button1 = new System.Windows.Forms.Button();
+			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.Delete_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.Search_button = new System.Windows.Forms.Button();
 			this.label1 = new System.Windows.Forms.Label();
 			this.Artist_textbox = new System.Windows.Forms.TextBox();
 			this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -43,10 +45,9 @@
 			this.label4 = new System.Windows.Forms.Label();
 			this.Datasize_label = new System.Windows.Forms.Label();
 			this.Imagesize_label = new System.Windows.Forms.Label();
-			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.Delete_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.contextMenuStrip1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// listView1
@@ -91,15 +92,29 @@
 			this.Songtime_columnHeader.Text = "曲の長さ";
 			this.Songtime_columnHeader.Width = 70;
 			// 
-			// button1
+			// contextMenuStrip1
 			// 
-			this.button1.Location = new System.Drawing.Point(640, 406);
-			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(75, 23);
-			this.button1.TabIndex = 1;
-			this.button1.Text = "button1";
-			this.button1.UseVisualStyleBackColor = true;
-			this.button1.Click += new System.EventHandler(this.button1_Click);
+			this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.Delete_ToolStripMenuItem});
+			this.contextMenuStrip1.Name = "contextMenuStrip1";
+			this.contextMenuStrip1.Size = new System.Drawing.Size(120, 26);
+			// 
+			// Delete_ToolStripMenuItem
+			// 
+			this.Delete_ToolStripMenuItem.Name = "Delete_ToolStripMenuItem";
+			this.Delete_ToolStripMenuItem.Size = new System.Drawing.Size(119, 22);
+			this.Delete_ToolStripMenuItem.Text = "削除(&D)";
+			this.Delete_ToolStripMenuItem.Click += new System.EventHandler(this.Delete_ToolStripMenuItem_Click);
+			// 
+			// Search_button
+			// 
+			this.Search_button.Location = new System.Drawing.Point(643, 428);
+			this.Search_button.Name = "Search_button";
+			this.Search_button.Size = new System.Drawing.Size(75, 23);
+			this.Search_button.TabIndex = 1;
+			this.Search_button.Text = "検索";
+			this.Search_button.UseVisualStyleBackColor = true;
+			this.Search_button.Click += new System.EventHandler(this.Search_button_Click);
 			// 
 			// label1
 			// 
@@ -172,25 +187,20 @@
 			this.Imagesize_label.TabIndex = 9;
 			this.Imagesize_label.Text = "N/A";
 			// 
-			// contextMenuStrip1
+			// textBox1
 			// 
-			this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.Delete_ToolStripMenuItem});
-			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(153, 48);
-			// 
-			// Delete_ToolStripMenuItem
-			// 
-			this.Delete_ToolStripMenuItem.Name = "Delete_ToolStripMenuItem";
-			this.Delete_ToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-			this.Delete_ToolStripMenuItem.Text = "削除(&D)";
-			this.Delete_ToolStripMenuItem.Click += new System.EventHandler(this.Delete_ToolStripMenuItem_Click);
+			this.textBox1.Location = new System.Drawing.Point(249, 403);
+			this.textBox1.Name = "textBox1";
+			this.textBox1.Size = new System.Drawing.Size(469, 19);
+			this.textBox1.TabIndex = 10;
+			this.textBox1.Text = "ゆいかおり";
 			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(727, 571);
+			this.Controls.Add(this.textBox1);
 			this.Controls.Add(this.Imagesize_label);
 			this.Controls.Add(this.Datasize_label);
 			this.Controls.Add(this.label4);
@@ -199,13 +209,13 @@
 			this.Controls.Add(this.pictureBox1);
 			this.Controls.Add(this.Artist_textbox);
 			this.Controls.Add(this.label1);
-			this.Controls.Add(this.button1);
+			this.Controls.Add(this.Search_button);
 			this.Controls.Add(this.listView1);
 			this.Name = "Form1";
 			this.Text = "Form1";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			this.contextMenuStrip1.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -218,7 +228,7 @@
 		private System.Windows.Forms.ColumnHeader Path_columnHeader;
 		private System.Windows.Forms.ColumnHeader Songname_columnHeader;
 		private System.Windows.Forms.ColumnHeader Songtime_columnHeader;
-		private System.Windows.Forms.Button button1;
+		private System.Windows.Forms.Button Search_button;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.TextBox Artist_textbox;
 		private System.Windows.Forms.PictureBox pictureBox1;
@@ -229,6 +239,7 @@
 		private System.Windows.Forms.Label Imagesize_label;
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem Delete_ToolStripMenuItem;
+		private System.Windows.Forms.TextBox textBox1;
 	}
 }
 

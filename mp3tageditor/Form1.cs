@@ -33,7 +33,7 @@ namespace mp3tageditor
 			pictureBox1.Dispose();
 			//tmpファイルのロックを解除
 			pictureBox1 = null;
-			//ガベージコレクション
+			//ガベージコレクションを強制的に起動
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 			GC.Collect();
@@ -294,9 +294,78 @@ namespace mp3tageditor
 			return canvas;
 		}
 
-		private void button1_Click(object sender, EventArgs e)
+		private async void Search_button_Click(object sender, EventArgs e)
 		{
-			Console.WriteLine("files:" + Directory.GetFiles(".\\", "tmp*.png").Length);
+			RichTextBox rtb = new RichTextBox();
+
+			HttpClient hc = new HttpClient();
+			//URLエンコードをする
+			string Searchword_urlencoded = System.Web.HttpUtility.UrlEncode(textBox1.Text);
+			//www.animate-onlineshop.jpにアクセスする
+			string rethtml = await hc.GetStringAsync(@"http://www.animate-onlineshop.jp/products/list.php?smt=" + Searchword_urlencoded + "&spc=3&sl=100");
+
+			HtmlAgilityPack.HtmlDocument haphdoc = new HtmlAgilityPack.HtmlDocument();
+			//HTML形式の文字列をHTMLとして読み込み
+			haphdoc.LoadHtml(rethtml);
+
+			//ページ内の全商品を取得
+			HtmlAgilityPack.HtmlNodeCollection haphncProducts = haphdoc.DocumentNode.SelectNodes("//*[@id='result']/ul");
+			//商品画像
+			List<HtmlAgilityPack.HtmlNode> haphnImage = new List<HtmlAgilityPack.HtmlNode>();
+			//商品名
+			List<HtmlAgilityPack.HtmlNode> haphnName = new List<HtmlAgilityPack.HtmlNode>();
+			//発売日
+			List<HtmlAgilityPack.HtmlNode> haphnRelease_date = new List<HtmlAgilityPack.HtmlNode>();
+
+			//<ul class="product_horizontal_list clearfix"> この中に最大４つ商品情報が入っている
+			//<ul class="product_horizontal_list clearfix"> の数だけループ
+			//Listの添字としてしよう
+			int index_counter = 0;
+			for(int i = 1; i <= haphncProducts.Count; i++)
+			{
+				//<ul class="product_horizontal_list clearfix"> の中の <li class=""> の数を取得
+				HtmlAgilityPack.HtmlNodeCollection haphncProducts_details = haphdoc.DocumentNode.SelectNodes("//*[@id='result']/ul[" + i + "]/li");
+
+				for(int j = 1; j <= haphncProducts_details.Count; j ++)
+				{
+					//商品画像を取得
+					haphnImage.Add(haphdoc.DocumentNode.SelectSingleNode("//*[@id='result']/ul[" + i + "]/li[" + j + "]/div/div[1]/a/img"));
+					//商品名を取得
+					haphnName.Add(haphdoc.DocumentNode.SelectSingleNode("//*[@id='result']/ul[" + i + "]/li[" + j + "]/a"));
+					//発売日を取得
+					haphnRelease_date.Add(haphdoc.DocumentNode.SelectSingleNode("//*[@id='result']/ul[" + i + "]/li[" + j + "]/div/p"));
+
+					rtb.Text += "i["+i+"], j["+j+"]\r\n";
+					if(haphnImage[index_counter] != null)
+						rtb.Text += haphnImage[index_counter].OuterHtml + "\r\n";
+					else
+						rtb.Text += "got null.\n";
+					if(haphnName[index_counter] != null)
+						rtb.Text += haphnName[index_counter].InnerText + "\r\n";
+					else
+						rtb.Text += "got null.\n";
+					if(haphnRelease_date[index_counter] != null)
+						rtb.Text += haphnRelease_date[index_counter].InnerText + "\r\n\n";
+					else
+						rtb.Text += "got null.\n";
+
+					index_counter++;
+				}
+			}
+
+			Form htmlviewer = new Form();
+			Size UnknownSize = new Size(16, 38);
+			Size windowsize = new Size(500, 500) - UnknownSize;
+			htmlviewer.StartPosition = FormStartPosition.Manual;
+			htmlviewer.Location = new Point(this.Left + this.Width, this.Top);
+			htmlviewer.BackColor = Color.Black;
+			htmlviewer.Text = "HTML Viewer";
+			htmlviewer.Size = windowsize + UnknownSize;
+			rtb.Multiline = true;
+			rtb.Size = windowsize + windowsize;
+
+			htmlviewer.Controls.Add(rtb);
+			htmlviewer.Show(this);
 		}
 
 		/// <summary>
