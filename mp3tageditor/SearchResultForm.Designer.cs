@@ -28,12 +28,14 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			this.listView1 = new System.Windows.Forms.ListView();
+			this.Product_image_columnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			this.Product_name_columnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			this.Product_release_date_columnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.Select_button = new System.Windows.Forms.Button();
 			this.Cancel_button = new System.Windows.Forms.Button();
-			this.Product_name_columnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-			this.Product_image_columnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-			this.Product_release_date_columnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
 			this.SuspendLayout();
 			// 
 			// listView1
@@ -51,6 +53,21 @@
 			this.listView1.TabStop = false;
 			this.listView1.UseCompatibleStateImageBehavior = false;
 			this.listView1.View = System.Windows.Forms.View.Details;
+			// 
+			// Product_image_columnHeader
+			// 
+			this.Product_image_columnHeader.Text = "商品画像";
+			this.Product_image_columnHeader.Width = 116;
+			// 
+			// Product_name_columnHeader
+			// 
+			this.Product_name_columnHeader.Text = "商品名";
+			this.Product_name_columnHeader.Width = 422;
+			// 
+			// Product_release_date_columnHeader
+			// 
+			this.Product_release_date_columnHeader.Text = "発売日";
+			this.Product_release_date_columnHeader.Width = 113;
 			// 
 			// Select_button
 			// 
@@ -70,20 +87,11 @@
 			this.Cancel_button.Text = "キャンセル";
 			this.Cancel_button.UseVisualStyleBackColor = true;
 			// 
-			// Product_name_columnHeader
+			// imageList1
 			// 
-			this.Product_name_columnHeader.Text = "商品名";
-			this.Product_name_columnHeader.Width = 422;
-			// 
-			// Product_image_columnHeader
-			// 
-			this.Product_image_columnHeader.Text = "商品画像";
-			this.Product_image_columnHeader.Width = 116;
-			// 
-			// Product_release_date_columnHeader
-			// 
-			this.Product_release_date_columnHeader.Text = "発売日";
-			this.Product_release_date_columnHeader.Width = 113;
+			this.imageList1.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
+			this.imageList1.ImageSize = new System.Drawing.Size(16, 16);
+			this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
 			// 
 			// SearchResultForm
 			// 
@@ -95,6 +103,7 @@
 			this.Controls.Add(this.listView1);
 			this.Name = "SearchResultForm";
 			this.Text = "SearchResultForm";
+			this.Load += new System.EventHandler(this.SearchResultForm_Load);
 			this.ResumeLayout(false);
 
 		}
@@ -107,5 +116,6 @@
 		private System.Windows.Forms.ColumnHeader Product_release_date_columnHeader;
 		private System.Windows.Forms.Button Select_button;
 		private System.Windows.Forms.Button Cancel_button;
+		private System.Windows.Forms.ImageList imageList1;
 	}
 }

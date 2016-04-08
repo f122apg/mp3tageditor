@@ -296,21 +296,26 @@ namespace mp3tageditor
 
 		private async void Search_button_Click(object sender, EventArgs e)
 		{
-			RichTextBox rtb = new RichTextBox();
-
 			HttpClient hc = new HttpClient();
 			//URLエンコードをする
 			string Searchword_urlencoded = System.Web.HttpUtility.UrlEncode(textBox1.Text);
 			string rethtml;
 			HtmlAgilityPack.HtmlDocument haphdoc = new HtmlAgilityPack.HtmlDocument();
-						
+
+			bool Waitflag = false;
+
 			do
 			{
 				//www.animate-onlineshop.jpにアクセスして、特定の言葉を検索する
 				//smt = 検索される文字列、spc = 検索されるカテゴリ 3は音楽、sl= 検索結果の表示件数
 				rethtml = await hc.GetStringAsync(@"http://www.animate-onlineshop.jp/products/list.php?smt=" + Searchword_urlencoded + "&spc=3&sl=100");
+				if(rethtml.Contains("※ただいま検索サーバが非常に混雑しております。時間を空けてお試し下さい"))
+					Waitflag = true;
+				else
+					Waitflag = false;
 				//検索がうまくいかなかった場合、処理を5秒待機させて再び
-				await System.Threading.Tasks.Task.Delay(5000);
+				if( Waitflag )
+					await System.Threading.Tasks.Task.Delay(5000);
 			} while(rethtml.Contains("※ただいま検索サーバが非常に混雑しております。時間を空けてお試し下さい"));
 
 			//HTML形式の文字列をHTMLとして読み込み
@@ -325,9 +330,11 @@ namespace mp3tageditor
 			//発売日
 			List<HtmlAgilityPack.HtmlNode> haphnRelease_date = new List<HtmlAgilityPack.HtmlNode>();
 
+			//SearchResultFormに表示するためのデータを保持する
+			DataShareClass dsc = new DataShareClass();
 			//<ul class="product_horizontal_list clearfix"> この中に最大４つ商品情報が入っている
 			//<ul class="product_horizontal_list clearfix"> の数だけループ
-			//Listの添字としてしよう
+			//Listの添字として使用
 			int index_counter = 0;
 			for(int i = 1; i <= haphncProducts.Count; i++)
 			{
@@ -343,37 +350,22 @@ namespace mp3tageditor
 					//発売日を取得
 					haphnRelease_date.Add(haphdoc.DocumentNode.SelectSingleNode("//*[@id='result']/ul[" + i + "]/li[" + j + "]/div/p"));
 
-					rtb.Text += "i["+i+"], j["+j+"]\r\n";
-					if(haphnImage[index_counter] != null)
-						rtb.Text += haphnImage[index_counter].OuterHtml + "\r\n";
-					else
-						rtb.Text += "got null.\n";
-					if(haphnName[index_counter] != null)
-						rtb.Text += haphnName[index_counter].InnerText + "\r\n";
-					else
-						rtb.Text += "got null.\n";
-					if(haphnRelease_date[index_counter] != null)
-						rtb.Text += haphnRelease_date[index_counter].InnerText + "\r\n\n";
-					else
-						rtb.Text += "got null.\n";
+					//URL部分だけ抜き取る
+					Uri uri = new Uri(haphnImage[index_counter].OuterHtml.Substring(10, haphnImage[index_counter].OuterHtml.IndexOf("alt") - 12));
+					//Uriを追加
+					dsc.Product_imageuris.Add(uri);
+					//商品名を追加
+					dsc.Product_names.Add(haphnName[index_counter].InnerText);
+					//発売日を追加
+					dsc.Product_release_date.Add(haphnRelease_date[index_counter].InnerText);
 
 					index_counter++;
 				}
 			}
 
-			Form htmlviewer = new Form();
-			Size UnknownSize = new Size(16, 38);
-			Size windowsize = new Size(500, 500) - UnknownSize;
-			htmlviewer.StartPosition = FormStartPosition.Manual;
-			htmlviewer.Location = new Point(this.Left + this.Width, this.Top);
-			htmlviewer.BackColor = Color.Black;
-			htmlviewer.Text = "HTML Viewer";
-			htmlviewer.Size = windowsize + UnknownSize;
-			rtb.Multiline = true;
-			rtb.Size = windowsize + windowsize;
-
-			htmlviewer.Controls.Add(rtb);
-			htmlviewer.Show(this);
+			SearchResultForm srf = new SearchResultForm();
+			srf.datashareclass = dsc;
+			srf.ShowDialog(this);
 		}
 
 		/// <summary>

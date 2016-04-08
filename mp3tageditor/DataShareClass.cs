@@ -5,21 +5,21 @@ namespace mp3tageditor
 	/// <summary>
 	/// Form1で検索した結果をSearchResultFormへ渡すために架け橋となる
 	/// </summary>
-	class DataShareClass
+	public class DataShareClass
 	{
 		//商品画像を保持する
-		public List<System.Drawing.Image> Product_images;
+		public List<System.Uri> Product_imageuris;
 		//商品名を保持する
 		public List<string> Product_names;
 		//発売日を保持する
 		public List<string> Product_release_date;
 
 		//コンストラクタ
-		DataShareClass(List<System.Drawing.Image> images, List<string> names, List<string> release_date)
+		public DataShareClass()
 		{
-			Product_images = images;
-			Product_names = names;
-			Product_release_date = release_date;
+			Product_imageuris = new List<System.Uri>();
+			Product_names = new List<string>();
+			Product_release_date = new List<string>();
         }
 	}
 }
