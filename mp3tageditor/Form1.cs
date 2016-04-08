@@ -301,10 +301,18 @@ namespace mp3tageditor
 			HttpClient hc = new HttpClient();
 			//URLエンコードをする
 			string Searchword_urlencoded = System.Web.HttpUtility.UrlEncode(textBox1.Text);
-			//www.animate-onlineshop.jpにアクセスする
-			string rethtml = await hc.GetStringAsync(@"http://www.animate-onlineshop.jp/products/list.php?smt=" + Searchword_urlencoded + "&spc=3&sl=100");
-
+			string rethtml;
 			HtmlAgilityPack.HtmlDocument haphdoc = new HtmlAgilityPack.HtmlDocument();
+						
+			do
+			{
+				//www.animate-onlineshop.jpにアクセスして、特定の言葉を検索する
+				//smt = 検索される文字列、spc = 検索されるカテゴリ 3は音楽、sl= 検索結果の表示件数
+				rethtml = await hc.GetStringAsync(@"http://www.animate-onlineshop.jp/products/list.php?smt=" + Searchword_urlencoded + "&spc=3&sl=100");
+				//検索がうまくいかなかった場合、処理を5秒待機させて再び
+				await System.Threading.Tasks.Task.Delay(5000);
+			} while(rethtml.Contains("※ただいま検索サーバが非常に混雑しております。時間を空けてお試し下さい"));
+
 			//HTML形式の文字列をHTMLとして読み込み
 			haphdoc.LoadHtml(rethtml);
 
