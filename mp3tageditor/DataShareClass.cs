@@ -8,7 +8,7 @@ namespace mp3tageditor
 	public class DataShareClass
 	{
 		//商品画像を保持する
-		public List<System.Uri> Product_imageuris;
+		public List<string> Product_imageuris;
 		//商品名を保持する
 		public List<string> Product_names;
 		//発売日を保持する
@@ -17,7 +17,7 @@ namespace mp3tageditor
 		//コンストラクタ
 		public DataShareClass()
 		{
-			Product_imageuris = new List<System.Uri>();
+			Product_imageuris = new List<string>();
 			Product_names = new List<string>();
 			Product_release_date = new List<string>();
         }

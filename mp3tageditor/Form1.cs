@@ -351,9 +351,8 @@ namespace mp3tageditor
 					haphnRelease_date.Add(haphdoc.DocumentNode.SelectSingleNode("//*[@id='result']/ul[" + i + "]/li[" + j + "]/div/p"));
 
 					//URL部分だけ抜き取る
-					Uri uri = new Uri(haphnImage[index_counter].OuterHtml.Substring(10, haphnImage[index_counter].OuterHtml.IndexOf("alt") - 12));
-					//Uriを追加
-					dsc.Product_imageuris.Add(uri);
+					//商品画像のURLを追加
+					dsc.Product_imageuris.Add(haphnImage[index_counter].OuterHtml.Substring(10, haphnImage[index_counter].OuterHtml.IndexOf("alt") - 12));
 					//商品名を追加
 					dsc.Product_names.Add(haphnName[index_counter].InnerText);
 					//発売日を追加
@@ -366,6 +365,11 @@ namespace mp3tageditor
 			SearchResultForm srf = new SearchResultForm();
 			srf.datashareclass = dsc;
 			srf.ShowDialog(this);
+
+			if( DataShareC.Product_imageuris != null )
+			{
+
+			}
 		}
 
 		/// <summary>
@@ -383,6 +387,12 @@ namespace mp3tageditor
 		public static List<string> CacheImageFilePaths
 		{
 			get { return cacheimagefilepaths; }
+		}
+		private static DataShareClass dsclass;
+		public static DataShareClass DataShareC
+		{
+			set { dsclass = value; }
+			get { return dsclass; }
 		}
 	}
 }

@@ -46,8 +46,11 @@
 			this.Datasize_label = new System.Windows.Forms.Label();
 			this.Imagesize_label = new System.Windows.Forms.Label();
 			this.textBox1 = new System.Windows.Forms.TextBox();
+			this.label5 = new System.Windows.Forms.Label();
+			this.pictureBox2 = new System.Windows.Forms.PictureBox();
 			this.contextMenuStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// listView1
@@ -108,9 +111,9 @@
 			// 
 			// Search_button
 			// 
-			this.Search_button.Location = new System.Drawing.Point(643, 428);
+			this.Search_button.Location = new System.Drawing.Point(554, 431);
 			this.Search_button.Name = "Search_button";
-			this.Search_button.Size = new System.Drawing.Size(75, 23);
+			this.Search_button.Size = new System.Drawing.Size(164, 53);
 			this.Search_button.TabIndex = 1;
 			this.Search_button.Text = "検索";
 			this.Search_button.UseVisualStyleBackColor = true;
@@ -189,17 +192,36 @@
 			// 
 			// textBox1
 			// 
-			this.textBox1.Location = new System.Drawing.Point(249, 403);
+			this.textBox1.Location = new System.Drawing.Point(554, 406);
 			this.textBox1.Name = "textBox1";
-			this.textBox1.Size = new System.Drawing.Size(469, 19);
+			this.textBox1.Size = new System.Drawing.Size(164, 19);
 			this.textBox1.TabIndex = 10;
 			this.textBox1.Text = "ゆいかおり";
+			// 
+			// label5
+			// 
+			this.label5.AutoSize = true;
+			this.label5.Location = new System.Drawing.Point(247, 406);
+			this.label5.Name = "label5";
+			this.label5.Size = new System.Drawing.Size(135, 12);
+			this.label5.TabIndex = 11;
+			this.label5.Text = "置き換えられるアートワーク：";
+			// 
+			// pictureBox2
+			// 
+			this.pictureBox2.Location = new System.Drawing.Point(388, 406);
+			this.pictureBox2.Name = "pictureBox2";
+			this.pictureBox2.Size = new System.Drawing.Size(160, 153);
+			this.pictureBox2.TabIndex = 12;
+			this.pictureBox2.TabStop = false;
 			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(727, 571);
+			this.Controls.Add(this.pictureBox2);
+			this.Controls.Add(this.label5);
 			this.Controls.Add(this.textBox1);
 			this.Controls.Add(this.Imagesize_label);
 			this.Controls.Add(this.Datasize_label);
@@ -216,6 +238,7 @@
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
 			this.contextMenuStrip1.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -240,6 +263,8 @@
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem Delete_ToolStripMenuItem;
 		private System.Windows.Forms.TextBox textBox1;
+		private System.Windows.Forms.Label label5;
+		private System.Windows.Forms.PictureBox pictureBox2;
 	}
 }
 
