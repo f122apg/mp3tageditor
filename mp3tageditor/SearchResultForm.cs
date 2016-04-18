@@ -44,9 +44,14 @@ namespace mp3tageditor
 		{
 			if(listView1.SelectedItems.Count > 0)
 			{
-				Form1.DataShareC.Product_imageuris.Add(listView1.SelectedItems[0].Text);
-				Form1.DataShareC.Product_names.Add(listView1.SelectedItems[0].SubItems[1].Text);
-				Form1.DataShareC.Product_release_date.Add(listView1.SelectedItems[0].SubItems[2].Text);
+				dsclass.Product_imageuris.Clear();
+				dsclass.Product_names.Clear();
+				dsclass.Product_release_date.Clear();
+
+				dsclass.Product_imageuris.Add(listView1.SelectedItems[0].ImageKey);
+				dsclass.Product_names.Add(listView1.SelectedItems[0].SubItems[1].Text);
+				dsclass.Product_release_date.Add(listView1.SelectedItems[0].SubItems[2].Text);
+				Form1.DataShareC = dsclass;
 
 				imageList1.Images.Clear();
 				listView1.Clear();

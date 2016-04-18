@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Net.Http;
 using System.IO;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace mp3tageditor
 {
@@ -180,7 +181,7 @@ namespace mp3tageditor
 						if(TempImageFilePaths[i][1] != null)
 						{
 							Image img = Image.FromFile(TempImageFilePaths[i][1]);
-							pictureBox1.Image = ImageResize(img, Consts.PICTUREBOX_THUMBNAIL_SIZE);
+							pictureBox1.Image = ImageResize(img, pictureBox1.Size);
 							//BをKB(1024Byte = 1KB)で計算
 							Datasize_label.Text = (new FileInfo(TempImageFilePaths[i][1]).Length / 1024f).ToString("#,### KB");
 							Imagesize_label.Text = img.Width + "x" + img.Height;
@@ -298,7 +299,7 @@ namespace mp3tageditor
 		{
 			HttpClient hc = new HttpClient();
 			//URLエンコードをする
-			string Searchword_urlencoded = System.Web.HttpUtility.UrlEncode(textBox1.Text);
+			string Searchword_urlencoded = System.Web.HttpUtility.UrlEncode(KeyWordSearch_textBox.Text);
 			string rethtml;
 			HtmlAgilityPack.HtmlDocument haphdoc = new HtmlAgilityPack.HtmlDocument();
 
@@ -366,10 +367,89 @@ namespace mp3tageditor
 			srf.datashareclass = dsc;
 			srf.ShowDialog(this);
 
-			if( DataShareC.Product_imageuris != null )
+			if(DataShareC.Product_imageuris != null)
 			{
+				Stream resstream = await hc.GetStreamAsync(DataShareC.Product_imageuris[0]);
+				Image.FromStream(resstream).Save("ReplaceArtwork.png", ImageFormat.Png);
 
+				Replace_pictureBox.Image = ImageResize(Image.FromFile("ReplaceArtwork.png"), Replace_pictureBox.Size);
 			}
+		}
+
+		/// <summary>
+		/// 歌詞タイムからアーティスト情報を取得
+		/// </summary>
+		/// <param name="songname">アーティスト情報を取得する曲名を指定</param>
+		/// <returns>アーティスト名を返す</returns>
+		private async Task<string> GetArtistFromWeb(string songname)
+		{
+			songname = System.Web.HttpUtility.UrlEncode(songname);
+
+			Console.WriteLine("songname:" + songname);
+
+			//Yahoo検索から歌詞タイムのURLを取得
+			HttpClient hc_yahoo = new HttpClient();
+
+			Console.WriteLine("yahoo検索を実行");
+			Console.WriteLine("https://search.yahoo.co.jp/search?p=" + songname + "+site%3Akasi-time.com");
+
+			string rethtml_yahoo = await hc_yahoo.GetStringAsync("https://search.yahoo.co.jp/search?p=" + songname + "+site%3Akasi-time.com");
+			HtmlAgilityPack.HtmlDocument haphd_yahoo = new HtmlAgilityPack.HtmlDocument();
+			haphd_yahoo.DetectEncodingHtml(rethtml_yahoo);
+
+			Console.WriteLine("Node検索");
+
+			HtmlAgilityPack.HtmlNode haphn_yahoo = haphd_yahoo.DocumentNode.SelectSingleNode("//*[@id='web']/ol/li[1]/em/text()");
+
+			Console.WriteLine("End. URL:" + haphn_yahoo.InnerText);
+
+			HttpClient hc_kasitime = new HttpClient();
+
+			Console.WriteLine("歌詞タイムにアクセス");
+
+			string rethtml_kasitime = await hc_kasitime.GetStringAsync("http://" + haphn_yahoo.InnerText);
+
+			HtmlAgilityPack.HtmlDocument haphd = new HtmlAgilityPack.HtmlDocument();
+			haphd.DetectEncodingHtml(rethtml_kasitime);
+
+			//titleタグを取得
+			HtmlAgilityPack.HtmlNode haphn = haphd.DocumentNode.SelectSingleNode("//title/text()");
+			string artists = System.Web.HttpUtility.HtmlDecode(haphn.InnerText);
+			//曲名と - 歌詞タイムを除外
+			artists = artists.Substring(artists.IndexOf("　　") + 2, Math.Abs((artists.IndexOf("　　") + 2) - artists.LastIndexOf(" - ")));
+
+			if(artists.Contains("("))
+			{
+				if(artists.Contains("/"))
+				{
+					// 「/」で分割
+					string[] artistcvs = artists.Split(new char[] { '/' });
+					artists = null;
+
+					for(int i = 0; i < artistcvs.Length; i++)
+					{
+						artistcvs[i] = artistcvs[i].Replace("cv.", "CV.");
+						artists += artistcvs[i] + " & ";
+					}
+
+					//最後に付いている 「 & 」を取り除く
+					artists = artists.Remove(artists.Length - 3, 3);
+				}
+				else
+				{
+					//声優の情報が artists にあった場合、声優部分だけ抜き取って artistcv に入れる
+					string artistcv = artists.Substring(artists.IndexOf("("), Math.Abs(artists.IndexOf("(") - artists.LastIndexOf(")")) + 1);
+					//声優の情報を取り除く
+					artists = artists.Replace(artistcv, "");
+					artistcv = artistcv.Replace("&", " & ");
+					artistcv = artistcv.Replace("cv.", "CV.");
+					artists += " " + artistcv;
+				}
+			}
+
+			artists = artists.Replace("▽", "♡");
+
+			return artists;
 		}
 
 		/// <summary>
@@ -394,10 +474,23 @@ namespace mp3tageditor
 			set { dsclass = value; }
 			get { return dsclass; }
 		}
-	}
-}
 
-class Consts
-{
-	public static readonly Size PICTUREBOX_THUMBNAIL_SIZE = new Size(160, 153);
+		private async void button1_Click(object sender, EventArgs e)
+		{
+			//HttpClient hc_yahoo = new HttpClient();
+			//string songname = "HappyぱLucky";
+			//songname = System.Web.HttpUtility.UrlEncode(songname);
+
+			//Console.WriteLine("songname:" + songname);
+
+			//string rethtml_yahoo = await hc_yahoo.GetStringAsync("https://search.yahoo.co.jp/search?p=" + songname + "+site%3Akasi-time.com");
+			//HtmlAgilityPack.HtmlDocument haphd_yahoo = new HtmlAgilityPack.HtmlDocument();
+			//haphd_yahoo.DetectEncodingHtml(rethtml_yahoo);
+
+			//Console.WriteLine("Node検索");
+
+			//HtmlAgilityPack.HtmlNode haphn_yahoo = haphd_yahoo.DocumentNode.SelectSingleNode("//*[@id='WS2m']/div[1]/div[2]/div/span[1]");
+			ReplaceArtist_textBox.Text = await GetArtistFromWeb("HappyぱLucky");
+		}
+	}
 }
