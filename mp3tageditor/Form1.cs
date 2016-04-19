@@ -452,6 +452,53 @@ namespace mp3tageditor
 			return artists;
 		}
 
+		private string GetArtistFromWeb2(string songname)
+		{
+			HttpClient hc = new HttpClient();
+			//string rethtml = hc.GetStringAsync();
+
+			HtmlAgilityPack.HtmlDocument haphd = new HtmlAgilityPack.HtmlDocument();
+			haphd.DetectEncodingAndLoad("jlyric1.htm");
+
+			HtmlAgilityPack.HtmlNode haphn = haphd.DocumentNode.SelectSingleNode("//*[@id='lyricList']");
+			List<string> inner = new List<string>();
+
+			TextBox tb = new TextBox();
+			tb.Text = haphn.InnerHtml;
+
+			for(int i = 0; i < tb.Lines.Length; i ++)
+			{
+				inner.Add(tb.Lines[i]);
+			}
+
+			inner.RemoveAt(0);
+			inner.RemoveAt(0);
+			inner.RemoveAt(inner.Count - 1);
+
+			int gyou = 1;
+
+			for(int i = 0; i < inner.Count; i ++)
+			{
+				if(gyou % 13 == 0)
+				{
+					Console.WriteLine((i - 7) + "行目：" + inner[i - 7]);
+					Console.WriteLine((i + 1) + "行目：" + inner[i]);
+				}
+				gyou++;
+			}
+
+			//for(int i = 0; i < inner.Count; i ++)
+			//{
+			//	if(inner[i].Contains("("))
+			//	{	
+			//		Console.WriteLine(inner[i]);
+			//		break;
+			//	}
+			//}
+
+			return "";
+		}
+
 		/// <summary>
 		/// 一次元：mp3ファイルのパス。二次元要素のIDとして使用する。 二次元：mp3から読み込んだアートワークをpictureboxに表示するための画像のパス
 		/// </summary>
@@ -490,7 +537,7 @@ namespace mp3tageditor
 			//Console.WriteLine("Node検索");
 
 			//HtmlAgilityPack.HtmlNode haphn_yahoo = haphd_yahoo.DocumentNode.SelectSingleNode("//*[@id='WS2m']/div[1]/div[2]/div/span[1]");
-			ReplaceArtist_textBox.Text = await GetArtistFromWeb("HappyぱLucky");
+			ReplaceArtist_textBox.Text = GetArtistFromWeb2("HappyぱLucky");
 		}
 	}
 }
