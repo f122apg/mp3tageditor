@@ -452,13 +452,15 @@ namespace mp3tageditor
 			return artists;
 		}
 
-		private string GetArtistFromWeb2(string songname)
+		private async Task<string> GetArtistFromWeb2(string songname)
 		{
 			HttpClient hc = new HttpClient();
-			//string rethtml = hc.GetStringAsync();
-
+			songname = System.Web.HttpUtility.UrlEncode(songname, System.Text.Encoding.UTF8).Replace("%20", "+");
+			Console.WriteLine("曲一覧を取得中...");
+			string rethtml = await hc.GetStringAsync("http://search.j-lyric.net/index.php?kt=" + songname + "&ct=0&ka=&ca=0&kl=&cl=0");
+			Console.WriteLine("解析開始");
 			HtmlAgilityPack.HtmlDocument haphd = new HtmlAgilityPack.HtmlDocument();
-			haphd.DetectEncodingAndLoad("jlyric1.htm");
+			haphd.DetectEncodingHtml(rethtml);
 
 			HtmlAgilityPack.HtmlNode haphn = haphd.DocumentNode.SelectSingleNode("//*[@id='lyricList']");
 			List<string> HtmlInnerTexts = new List<string>();
@@ -471,28 +473,47 @@ namespace mp3tageditor
 			{
 				HtmlInnerTexts.Add(tb.Lines[i]);
 
-                if(HtmlInnerTexts[i].Contains("歌：<a href="))
-                {
-                    if(HtmlInnerTexts[i].Contains("("))
-                    {
-                        //おそらく声優情報があるアーティスト情報を取得する
-                        //"歌：<a href='http://j-lyric.net/artist/a05a83d/'>ドレッシングふらわー(真中らぁら(茜屋日海夏)/緑風ふわり(佐藤あずさ)/ドロシー・ウェスト(澁谷梓希)/レオナ・ウェスト(若井友希)/東堂シオン(山北早紀)</a>"
-                        return HtmlInnerTexts[i].Substring(
-                            HtmlInnerTexts[i].IndexOf(">") + 1, 
-                            Math.Abs((HtmlInnerTexts[i].IndexOf(">") + 1) - HtmlInnerTexts[i].LastIndexOf("<")));
-                    }
-                    else if(i == (tb.Lines.Length - 1))
-                    {
-                        //おそらく声優情報がないアーティスト情報を取得する
-                        //<a href="http://j-lyric.net/artist/a05a874/">ドレッシングふらわー</a>
-                        return HtmlInnerTexts[i].Substring(
-                            HtmlInnerTexts[i].IndexOf(">") + 1,
-                            Math.Abs((HtmlInnerTexts[i].IndexOf(">") + 1) - HtmlInnerTexts[i].LastIndexOf("<")));
-                    }
-                }
+				if(HtmlInnerTexts[i].Contains("歌：<a href="))
+				{
+					if(HtmlInnerTexts[i].Contains("("))
+					{
+						//おそらく声優情報があるアーティスト情報を取得する
+						//サンプル："歌：<a href='http://j-lyric.net/artist/a05a83d/'>ドレッシングふらわー(真中らぁら(茜屋日海夏)/緑風ふわり(佐藤あずさ)/ドロシー・ウェスト(澁谷梓希)/レオナ・ウェスト(若井友希)/東堂シオン(山北早紀)</a>"
+						string Artist_All = HtmlInnerTexts[i].Substring(
+							HtmlInnerTexts[i].IndexOf(">") + 1, 
+							Math.Abs((HtmlInnerTexts[i].IndexOf(">") + 1) - HtmlInnerTexts[i].LastIndexOf("<")));
+						//アーティストのグループ名だけを取得する
+						//この場合だとサンプルのドレッシングふらわーを取得
+						string Artist_Group = Artist_All.Substring(0, Artist_All.IndexOf("("));
+						//アーティストのキャラクター名および、声優だけを取得する
+						//この場合だとサンプルの真中らぁら(茜屋日海夏)/緑風ふわり(佐藤あずさ)/ドロシー・ウェスト(澁谷梓希)/レオナ・ウェスト(若井友希)/東堂シオン(山北早紀)を取得
+						string Artist_CV = Artist_All.Substring(Artist_All.IndexOf("(") + 1);
+						//Artist_CVに代入されている声優を一人づつ配列に代入する
+						string[] Artist_CVs = Artist_CV.Split(new char[] { '/' });
+						Artist_CV = null;
+
+						//Artist_CVにArtist_CVsの ( を (CV. に置き換えて、最後に & を付ける
+						for(int j = 0; j < Artist_CVs.Length; j++)
+							Artist_CV += Artist_CVs[j].Replace("(", "(CV.") + "&";
+
+						//一人づつだった声優情報をすべてつなげる
+						Artist_CV = Artist_CV.Remove(Artist_CV.Length - 1, 1);
+						//グループ名と声優情報が繋がれたアーティスト情報を返す
+						return Artist_Group + "(" + Artist_CV + ")";
+					}
+					else if(i == (tb.Lines.Length - 1))
+					{
+						//おそらく声優情報がないアーティスト情報を取得して、返す
+						//サンプル：<a href="http://j-lyric.net/artist/a05a874/">ドレッシングふらわー</a>
+						return HtmlInnerTexts[i].Substring(
+							HtmlInnerTexts[i].IndexOf(">") + 1,
+							Math.Abs((HtmlInnerTexts[i].IndexOf(">") + 1) - HtmlInnerTexts[i].LastIndexOf("<")));
+					}
+				}
 			}
 
-            return "error";
+			//アーティスト情報を取得できなかった場合、error を返す
+			return "error";
 		}
 
 		/// <summary>
@@ -533,7 +554,7 @@ namespace mp3tageditor
 			//Console.WriteLine("Node検索");
 
 			//HtmlAgilityPack.HtmlNode haphn_yahoo = haphd_yahoo.DocumentNode.SelectSingleNode("//*[@id='WS2m']/div[1]/div[2]/div/span[1]");
-			ReplaceArtist_textBox.Text = GetArtistFromWeb2("");
+			ReplaceArtist_textBox.Text = await GetArtistFromWeb2("トンでもSUMMER ADVENTURE");
 		}
 	}
 }
