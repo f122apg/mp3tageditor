@@ -377,92 +377,32 @@ namespace mp3tageditor
 		}
 
 		/// <summary>
-		/// 歌詞タイムからアーティスト情報を取得
+		/// JLyricからアーティスト情報を取得
 		/// </summary>
-		/// <param name="songname">アーティスト情報を取得する曲名を指定</param>
-		/// <returns>アーティスト名を返す</returns>
+		/// <param name="songname">曲の名前</param>
+		/// <returns></returns>
 		private async Task<string> GetArtistFromWeb(string songname)
-		{
-			songname = System.Web.HttpUtility.UrlEncode(songname);
-
-			Console.WriteLine("songname:" + songname);
-
-			//Yahoo検索から歌詞タイムのURLを取得
-			HttpClient hc_yahoo = new HttpClient();
-
-			Console.WriteLine("yahoo検索を実行");
-			Console.WriteLine("https://search.yahoo.co.jp/search?p=" + songname + "+site%3Akasi-time.com");
-
-			string rethtml_yahoo = await hc_yahoo.GetStringAsync("https://search.yahoo.co.jp/search?p=" + songname + "+site%3Akasi-time.com");
-			HtmlAgilityPack.HtmlDocument haphd_yahoo = new HtmlAgilityPack.HtmlDocument();
-			haphd_yahoo.DetectEncodingHtml(rethtml_yahoo);
-
-			Console.WriteLine("Node検索");
-
-			HtmlAgilityPack.HtmlNode haphn_yahoo = haphd_yahoo.DocumentNode.SelectSingleNode("//*[@id='web']/ol/li[1]/em/text()");
-
-			Console.WriteLine("End. URL:" + haphn_yahoo.InnerText);
-
-			HttpClient hc_kasitime = new HttpClient();
-
-			Console.WriteLine("歌詞タイムにアクセス");
-
-			string rethtml_kasitime = await hc_kasitime.GetStringAsync("http://" + haphn_yahoo.InnerText);
-
-			HtmlAgilityPack.HtmlDocument haphd = new HtmlAgilityPack.HtmlDocument();
-			haphd.DetectEncodingHtml(rethtml_kasitime);
-
-			//titleタグを取得
-			HtmlAgilityPack.HtmlNode haphn = haphd.DocumentNode.SelectSingleNode("//title/text()");
-			string artists = System.Web.HttpUtility.HtmlDecode(haphn.InnerText);
-			//曲名と - 歌詞タイムを除外
-			artists = artists.Substring(artists.IndexOf("　　") + 2, Math.Abs((artists.IndexOf("　　") + 2) - artists.LastIndexOf(" - ")));
-
-			if(artists.Contains("("))
-			{
-				if(artists.Contains("/"))
-				{
-					// 「/」で分割
-					string[] artistcvs = artists.Split(new char[] { '/' });
-					artists = null;
-
-					for(int i = 0; i < artistcvs.Length; i++)
-					{
-						artistcvs[i] = artistcvs[i].Replace("cv.", "CV.");
-						artists += artistcvs[i] + " & ";
-					}
-
-					//最後に付いている 「 & 」を取り除く
-					artists = artists.Remove(artists.Length - 3, 3);
-				}
-				else
-				{
-					//声優の情報が artists にあった場合、声優部分だけ抜き取って artistcv に入れる
-					string artistcv = artists.Substring(artists.IndexOf("("), Math.Abs(artists.IndexOf("(") - artists.LastIndexOf(")")) + 1);
-					//声優の情報を取り除く
-					artists = artists.Replace(artistcv, "");
-					artistcv = artistcv.Replace("&", " & ");
-					artistcv = artistcv.Replace("cv.", "CV.");
-					artists += " " + artistcv;
-				}
-			}
-
-			artists = artists.Replace("▽", "♡");
-
-			return artists;
-		}
-
-		private async Task<string> GetArtistFromWeb2(string songname)
 		{
 			HttpClient hc = new HttpClient();
 			songname = System.Web.HttpUtility.UrlEncode(songname, System.Text.Encoding.UTF8).Replace("%20", "+");
 			Console.WriteLine("曲一覧を取得中...");
 			string rethtml = await hc.GetStringAsync("http://search.j-lyric.net/index.php?kt=" + songname + "&ct=0&ka=&ca=0&kl=&cl=0");
+			if(!File.Exists("jlyric2.htm"))
+			{
+				StreamWriter sw = new StreamWriter("jlyric2.htm");
+				sw.Write(rethtml);
+				sw.Dispose();
+				Application.Exit();
+			}
+
 			Console.WriteLine("解析開始");
 			HtmlAgilityPack.HtmlDocument haphd = new HtmlAgilityPack.HtmlDocument();
 			haphd.DetectEncodingHtml(rethtml);
 
+			Console.WriteLine("ノード検索開始");
+			////*[@id='lyricList']
 			HtmlAgilityPack.HtmlNode haphn = haphd.DocumentNode.SelectSingleNode("//*[@id='lyricList']");
+			Console.WriteLine("ノード検索終了");
 			List<string> HtmlInnerTexts = new List<string>();
 			TextBox tb = new TextBox();
 			//HtmlをTextboxに一旦入れる
@@ -477,27 +417,34 @@ namespace mp3tageditor
 				{
 					if(HtmlInnerTexts[i].Contains("("))
 					{
+						Console.WriteLine("アーティスト情報の取得開始");
 						//おそらく声優情報があるアーティスト情報を取得する
 						//サンプル："歌：<a href='http://j-lyric.net/artist/a05a83d/'>ドレッシングふらわー(真中らぁら(茜屋日海夏)/緑風ふわり(佐藤あずさ)/ドロシー・ウェスト(澁谷梓希)/レオナ・ウェスト(若井友希)/東堂シオン(山北早紀)</a>"
+						Console.WriteLine("アーティスト情報をすべて取得");
 						string Artist_All = HtmlInnerTexts[i].Substring(
 							HtmlInnerTexts[i].IndexOf(">") + 1, 
 							Math.Abs((HtmlInnerTexts[i].IndexOf(">") + 1) - HtmlInnerTexts[i].LastIndexOf("<")));
 						//アーティストのグループ名だけを取得する
 						//この場合だとサンプルのドレッシングふらわーを取得
+						Console.WriteLine("アーティスト情報のグループ名だけ取得");
 						string Artist_Group = Artist_All.Substring(0, Artist_All.IndexOf("("));
 						//アーティストのキャラクター名および、声優だけを取得する
 						//この場合だとサンプルの真中らぁら(茜屋日海夏)/緑風ふわり(佐藤あずさ)/ドロシー・ウェスト(澁谷梓希)/レオナ・ウェスト(若井友希)/東堂シオン(山北早紀)を取得
+						Console.WriteLine("アーティスト情報の声優だけ取得");
 						string Artist_CV = Artist_All.Substring(Artist_All.IndexOf("(") + 1);
 						//Artist_CVに代入されている声優を一人づつ配列に代入する
+						Console.WriteLine("声優の情報を分割");
 						string[] Artist_CVs = Artist_CV.Split(new char[] { '/' });
 						Artist_CV = null;
 
+						Console.WriteLine("文字の置き換え");
 						//Artist_CVにArtist_CVsの ( を (CV. に置き換えて、最後に & を付ける
 						for(int j = 0; j < Artist_CVs.Length; j++)
 							Artist_CV += Artist_CVs[j].Replace("(", "(CV.") + "&";
 
 						//一人づつだった声優情報をすべてつなげる
 						Artist_CV = Artist_CV.Remove(Artist_CV.Length - 1, 1);
+						Console.WriteLine("アーティスト情報を返す");
 						//グループ名と声優情報が繋がれたアーティスト情報を返す
 						return Artist_Group + "(" + Artist_CV + ")";
 					}
@@ -554,7 +501,7 @@ namespace mp3tageditor
 			//Console.WriteLine("Node検索");
 
 			//HtmlAgilityPack.HtmlNode haphn_yahoo = haphd_yahoo.DocumentNode.SelectSingleNode("//*[@id='WS2m']/div[1]/div[2]/div/span[1]");
-			ReplaceArtist_textBox.Text = await GetArtistFromWeb2("トンでもSUMMER ADVENTURE");
+			ReplaceArtist_textBox.Text = await GetArtistFromWeb("トンでもSUMMER ADVENTURE");
 		}
 	}
 }
