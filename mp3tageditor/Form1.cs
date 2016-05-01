@@ -374,6 +374,22 @@ namespace mp3tageditor
 
 				Replace_pictureBox.Image = ImageResize(Image.FromFile("ReplaceArtwork.png"), Replace_pictureBox.Size);
 			}
+
+			//アーティスト情報を取得
+			try
+			{
+				ReplaceArtist_textBox.Text = await GetArtistFromWeb(listView1.SelectedItems[0].SubItems[0].Text.Replace(".mp3", ""));
+			}
+			//曲が存在しなかったら
+			catch(NullReferenceException)
+			{
+				MessageBox.Show("検索された曲の歌詞は存在していません。", "検索エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		private void changing_tag_button_Click(object sender, EventArgs e)
+		{
+
 		}
 
 		/// <summary>
@@ -441,7 +457,7 @@ namespace mp3tageditor
 					}
 				}
 			}
-
+			//アーティスト情報が取得出来なかった場合、nullを返す
 			return null;
 		}
 
@@ -470,14 +486,6 @@ namespace mp3tageditor
 
 		private async void button1_Click(object sender, EventArgs e)
 		{
-			try
-			{
-				ReplaceArtist_textBox.Text = await GetArtistFromWeb("アラウンド・ザ・プリパランド");
-			}
-			catch(NullReferenceException)
-			{
-				MessageBox.Show("検索された曲の歌詞は存在していません。", "検索エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-			}
 		}
 	}
 }

@@ -52,6 +52,7 @@
 			this.ReplaceArtist_textBox = new System.Windows.Forms.TextBox();
 			this.label7 = new System.Windows.Forms.Label();
 			this.button1 = new System.Windows.Forms.Button();
+			this.changing_tag_button = new System.Windows.Forms.Button();
 			this.contextMenuStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.Replace_pictureBox)).BeginInit();
@@ -115,9 +116,9 @@
 			// 
 			// Search_button
 			// 
-			this.Search_button.Location = new System.Drawing.Point(444, 509);
+			this.Search_button.Location = new System.Drawing.Point(444, 484);
 			this.Search_button.Name = "Search_button";
-			this.Search_button.Size = new System.Drawing.Size(274, 53);
+			this.Search_button.Size = new System.Drawing.Size(274, 26);
 			this.Search_button.TabIndex = 1;
 			this.Search_button.Text = "検索";
 			this.Search_button.UseVisualStyleBackColor = true;
@@ -196,7 +197,7 @@
 			// 
 			// KeyWordSearch_textBox
 			// 
-			this.KeyWordSearch_textBox.Location = new System.Drawing.Point(444, 481);
+			this.KeyWordSearch_textBox.Location = new System.Drawing.Point(444, 459);
 			this.KeyWordSearch_textBox.Name = "KeyWordSearch_textBox";
 			this.KeyWordSearch_textBox.Size = new System.Drawing.Size(274, 19);
 			this.KeyWordSearch_textBox.TabIndex = 10;
@@ -238,7 +239,7 @@
 			// label7
 			// 
 			this.label7.AutoSize = true;
-			this.label7.Location = new System.Drawing.Point(444, 463);
+			this.label7.Location = new System.Drawing.Point(442, 444);
 			this.label7.Name = "label7";
 			this.label7.Size = new System.Drawing.Size(111, 12);
 			this.label7.TabIndex = 15;
@@ -246,7 +247,7 @@
 			// 
 			// button1
 			// 
-			this.button1.Location = new System.Drawing.Point(643, 447);
+			this.button1.Location = new System.Drawing.Point(180, 422);
 			this.button1.Name = "button1";
 			this.button1.Size = new System.Drawing.Size(75, 23);
 			this.button1.TabIndex = 16;
@@ -254,11 +255,22 @@
 			this.button1.UseVisualStyleBackColor = true;
 			this.button1.Click += new System.EventHandler(this.button1_Click);
 			// 
+			// changing_tag_button
+			// 
+			this.changing_tag_button.Location = new System.Drawing.Point(444, 517);
+			this.changing_tag_button.Name = "changing_tag_button";
+			this.changing_tag_button.Size = new System.Drawing.Size(274, 43);
+			this.changing_tag_button.TabIndex = 17;
+			this.changing_tag_button.Text = "タグを置き換える";
+			this.changing_tag_button.UseVisualStyleBackColor = true;
+			this.changing_tag_button.Click += new System.EventHandler(this.changing_tag_button_Click);
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(727, 571);
+			this.Controls.Add(this.changing_tag_button);
 			this.Controls.Add(this.button1);
 			this.Controls.Add(this.label7);
 			this.Controls.Add(this.ReplaceArtist_textBox);
@@ -312,6 +324,7 @@
 		private System.Windows.Forms.TextBox ReplaceArtist_textBox;
 		private System.Windows.Forms.Label label7;
 		private System.Windows.Forms.Button button1;
+		private System.Windows.Forms.Button changing_tag_button;
 	}
 }
 
