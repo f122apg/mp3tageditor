@@ -236,65 +236,6 @@ namespace mp3tageditor
 			}
 		}
 
-		/// <summary>
-		/// 引数urlから画像をダウンロードし、新しいフォームに表示する。
-		/// どちらかの引数は必ず指定しなければならない。どちらも指定した場合、第一引数を優先して表示する。
-		/// </summary>
-		/// <param name="url">画像が格納されたURLを指定。省略可。</param>
-		/// <param name="img">画像が格納されたImageを指定。省略可。</param>
-		private async void ImageShow(string url = null, Image img = null)
-		{
-			Image imgdata = null;
-
-			if(url != null)
-			{
-				HttpClient hc = new HttpClient();
-				//Streamダウンロード
-				using(Stream imgstream = await hc.GetStreamAsync(url))
-					imgdata = Image.FromStream(imgstream);
-			}
-			else
-				imgdata = (Image)img.Clone();
-
-			//フォーム作成
-			Form imageshow = new Form();
-			Size UnknownSize = new Size(16, 38);
-			Size windowsize = new Size(500, 500) - UnknownSize;
-			imageshow.StartPosition = FormStartPosition.Manual;
-			imageshow.Location = new Point(this.Left + this.Width, this.Top);
-			imageshow.BackColor = Color.Black;
-			imageshow.Text = "Artwork Viewer";
-			imageshow.Size = windowsize + UnknownSize;
-
-			//画像表示のためのpictureboxを作成
-			PictureBox pb = new PictureBox();
-			pictureBox1.Size = windowsize;
-
-			//先ほどダウンロードした画像をセット or ロードした画像をセット
-			pb.Image = ImageResize(imgdata, windowsize);
-			pb.SizeMode = PictureBoxSizeMode.AutoSize;
-
-			//pictureboxコントロールをフォームに追加
-			imageshow.Controls.Add(pb);
-			imageshow.Show(this);
-		}
-
-		/// <summary>
-		/// 画像をリサイズする。
-		/// </summary>
-		/// <param name="img">リサイズしたい画像を指定。</param>
-		/// <param name="size">リサイズしたいサイズを指定。</param>
-		/// <returns>指定されたサイズで調整された画像を返す。</returns>
-		private Image ImageResize(Image img, Size size)
-		{
-			Bitmap canvas = new Bitmap(size.Width, size.Height);
-			Graphics g = Graphics.FromImage(canvas);
-			g.DrawImage(img, 0, 0, size.Width, size.Height);
-			g.Dispose();
-
-			return canvas;
-		}
-
 		private async void Search_button_Click(object sender, EventArgs e)
 		{
 			HttpClient hc = new HttpClient();
@@ -389,7 +330,77 @@ namespace mp3tageditor
 
 		private void changing_tag_button_Click(object sender, EventArgs e)
 		{
+			using(TagLib.File mp3 = TagLib.File.Create(listView1.SelectedItems[0].SubItems[1].Text))
+			{
+				mp3.Mode = TagLib.File.AccessMode.Write;
 
+				TagLib.Tag mp3tag = mp3.Tag;
+				mp3tag.AlbumArtists = new string[] { ReplaceArtist_textBox.Text };
+				TagLib.Picture artwork_picture = new TagLib.Picture(TagLib.ByteVector.FromPath("ReplaceArtwork.png"));
+				mp3tag.Pictures = new TagLib.IPicture[] { artwork_picture };
+
+				mp3.Save();
+				MessageBox.Show("タグの置き換え成功。", "処理完了", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			}
+		}
+
+		/// <summary>
+		/// 引数urlから画像をダウンロードし、新しいフォームに表示する。
+		/// どちらかの引数は必ず指定しなければならない。どちらも指定した場合、第一引数を優先して表示する。
+		/// </summary>
+		/// <param name="url">画像が格納されたURLを指定。省略可。</param>
+		/// <param name="img">画像が格納されたImageを指定。省略可。</param>
+		private async void ImageShow(string url = null, Image img = null)
+		{
+			Image imgdata = null;
+
+			if(url != null)
+			{
+				HttpClient hc = new HttpClient();
+				//Streamダウンロード
+				using(Stream imgstream = await hc.GetStreamAsync(url))
+					imgdata = Image.FromStream(imgstream);
+			}
+			else
+				imgdata = (Image)img.Clone();
+
+			//フォーム作成
+			Form imageshow = new Form();
+			Size UnknownSize = new Size(16, 38);
+			Size windowsize = new Size(500, 500) - UnknownSize;
+			imageshow.StartPosition = FormStartPosition.Manual;
+			imageshow.Location = new Point(this.Left + this.Width, this.Top);
+			imageshow.BackColor = Color.Black;
+			imageshow.Text = "Artwork Viewer";
+			imageshow.Size = windowsize + UnknownSize;
+
+			//画像表示のためのpictureboxを作成
+			PictureBox pb = new PictureBox();
+			pictureBox1.Size = windowsize;
+
+			//先ほどダウンロードした画像をセット or ロードした画像をセット
+			pb.Image = ImageResize(imgdata, windowsize);
+			pb.SizeMode = PictureBoxSizeMode.AutoSize;
+
+			//pictureboxコントロールをフォームに追加
+			imageshow.Controls.Add(pb);
+			imageshow.Show(this);
+		}
+
+		/// <summary>
+		/// 画像をリサイズする。
+		/// </summary>
+		/// <param name="img">リサイズしたい画像を指定。</param>
+		/// <param name="size">リサイズしたいサイズを指定。</param>
+		/// <returns>指定されたサイズで調整された画像を返す。</returns>
+		private Image ImageResize(Image img, Size size)
+		{
+			Bitmap canvas = new Bitmap(size.Width, size.Height);
+			Graphics g = Graphics.FromImage(canvas);
+			g.DrawImage(img, 0, 0, size.Width, size.Height);
+			g.Dispose();
+
+			return canvas;
 		}
 
 		/// <summary>
@@ -484,7 +495,7 @@ namespace mp3tageditor
 			get { return dsclass; }
 		}
 
-		private async void button1_Click(object sender, EventArgs e)
+		private void button1_Click(object sender, EventArgs e)
 		{
 		}
 	}
