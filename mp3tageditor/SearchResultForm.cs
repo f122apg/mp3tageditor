@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net.Http;
 using System.IO;
@@ -37,7 +31,7 @@ namespace mp3tageditor
 				}
 			}
 
-			MessageBox.Show("検索終了。", "");
+			MessageBox.Show("画像取得処理終了。", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 
 		private void OK_button_Click(object sender, EventArgs e)
@@ -58,7 +52,7 @@ namespace mp3tageditor
 				this.Close();
 			}
 			else
-				MessageBox.Show("商品を選択してください！", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+				MessageBox.Show("曲を選択してください！", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 		}
 
 		private void Cancel_button_Click(object sender, EventArgs e)
