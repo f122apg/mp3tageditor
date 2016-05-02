@@ -79,6 +79,7 @@
 			// 
 			// OK_button
 			// 
+			this.OK_button.Enabled = false;
 			this.OK_button.Location = new System.Drawing.Point(13, 285);
 			this.OK_button.Name = "OK_button";
 			this.OK_button.Size = new System.Drawing.Size(209, 66);
@@ -89,6 +90,7 @@
 			// 
 			// Cancel_button
 			// 
+			this.Cancel_button.Enabled = false;
 			this.Cancel_button.Location = new System.Drawing.Point(465, 285);
 			this.Cancel_button.Name = "Cancel_button";
 			this.Cancel_button.Size = new System.Drawing.Size(209, 66);
@@ -102,9 +104,11 @@
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(686, 363);
+			this.ControlBox = false;
 			this.Controls.Add(this.Cancel_button);
 			this.Controls.Add(this.OK_button);
 			this.Controls.Add(this.listView1);
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.Name = "SearchResultForm";
 			this.Text = "SearchResultForm";
 			this.Load += new System.EventHandler(this.SearchResultForm_Load);

@@ -31,9 +31,9 @@ namespace mp3tageditor
 			//************ 終了処理 *************
 			//*********************************
 			//リソースを解放
-			pictureBox1.Dispose();
+			mp3artwork_pictureBox.Dispose();
 			//tmpファイルのロックを解除
-			pictureBox1 = null;
+			mp3artwork_pictureBox = null;
 			//ガベージコレクションを強制的に起動
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
@@ -181,7 +181,7 @@ namespace mp3tageditor
 						if(TempImageFilePaths[i][1] != null)
 						{
 							Image img = Image.FromFile(TempImageFilePaths[i][1]);
-							pictureBox1.Image = ImageResize(img, pictureBox1.Size);
+							mp3artwork_pictureBox.Image = ImageResize(img, mp3artwork_pictureBox.Size);
 							//BをKB(1024Byte = 1KB)で計算
 							Datasize_label.Text = (new FileInfo(TempImageFilePaths[i][1]).Length / 1024f).ToString("#,### KB");
 							Imagesize_label.Text = img.Width + "x" + img.Height;
@@ -191,13 +191,15 @@ namespace mp3tageditor
 						//曲自体に画像が設定されていない場合、pictureboxには何も設定しない
 						else if(TempImageFilePaths[i][1] == null)
 						{
-							pictureBox1.Image = null;
+							mp3artwork_pictureBox.Image = null;
 							Datasize_label.Text = "N/A";
 							Imagesize_label.Text = "N/A";
 							break;
 						}
 					}
 				}
+
+				KeyWordSearch_textBox.Text = listView1.SelectedItems[0].SubItems[0].Text.Replace(".mp3", "");
 			}
 		}
 
@@ -210,7 +212,7 @@ namespace mp3tageditor
 					"曲の削除確認",
 					MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
 				{
-					pictureBox1.Image = null;
+					mp3artwork_pictureBox.Image = null;
 					Datasize_label.Text = "N/A";
 					Imagesize_label.Text = "N/A";
 					
@@ -222,7 +224,7 @@ namespace mp3tageditor
 				MessageBox.Show("曲を選択してください。", "削除エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
 		}
 
-		private void pictureBox1_Click(object sender, EventArgs e)
+		private void mp3artwork_pictureBox_Click(object sender, EventArgs e)
 		{
 			if(listView1.SelectedItems.Count > 0)
 			{
@@ -236,116 +238,143 @@ namespace mp3tageditor
 			}
 		}
 
-		private async void Search_button_Click(object sender, EventArgs e)
+		private void ReplaceArtwork_pictureBox_Click(object sender, EventArgs e)
 		{
-			HttpClient hc = new HttpClient();
-			//URLエンコードをする
-			string Searchword_urlencoded = System.Web.HttpUtility.UrlEncode(KeyWordSearch_textBox.Text);
-			string rethtml;
-			HtmlAgilityPack.HtmlDocument haphdoc = new HtmlAgilityPack.HtmlDocument();
-
-			bool Waitflag = false;
-
-			do
-			{
-				//www.animate-onlineshop.jpにアクセスして、特定の言葉を検索する
-				//smt = 検索される文字列、spc = 検索されるカテゴリ 3は音楽、sl= 検索結果の表示件数
-				rethtml = await hc.GetStringAsync(@"http://www.animate-onlineshop.jp/products/list.php?smt=" + Searchword_urlencoded + "&spc=3&sl=100");
-				if(rethtml.Contains("※ただいま検索サーバが非常に混雑しております。時間を空けてお試し下さい"))
-					Waitflag = true;
-				else
-					Waitflag = false;
-				//検索がうまくいかなかった場合、処理を5秒待機させて再び
-				if( Waitflag )
-					await System.Threading.Tasks.Task.Delay(5000);
-			} while(rethtml.Contains("※ただいま検索サーバが非常に混雑しております。時間を空けてお試し下さい"));
-
-			//HTML形式の文字列をHTMLとして読み込み
-			haphdoc.LoadHtml(rethtml);
-
-			//ページ内の全商品を取得
-			HtmlAgilityPack.HtmlNodeCollection haphncProducts = haphdoc.DocumentNode.SelectNodes("//*[@id='result']/ul");
-			//商品画像
-			List<HtmlAgilityPack.HtmlNode> haphnImage = new List<HtmlAgilityPack.HtmlNode>();
-			//商品名
-			List<HtmlAgilityPack.HtmlNode> haphnName = new List<HtmlAgilityPack.HtmlNode>();
-			//発売日
-			List<HtmlAgilityPack.HtmlNode> haphnRelease_date = new List<HtmlAgilityPack.HtmlNode>();
-
-			//SearchResultFormに表示するためのデータを保持する
-			DataShareClass dsc = new DataShareClass();
-			//<ul class="product_horizontal_list clearfix"> この中に最大４つ商品情報が入っている
-			//<ul class="product_horizontal_list clearfix"> の数だけループ
-			//Listの添字として使用
-			int index_counter = 0;
-			for(int i = 1; i <= haphncProducts.Count; i++)
-			{
-				//<ul class="product_horizontal_list clearfix"> の中の <li class=""> の数を取得
-				HtmlAgilityPack.HtmlNodeCollection haphncProducts_details = haphdoc.DocumentNode.SelectNodes("//*[@id='result']/ul[" + i + "]/li");
-
-				for(int j = 1; j <= haphncProducts_details.Count; j ++)
-				{
-					//商品画像を取得
-					haphnImage.Add(haphdoc.DocumentNode.SelectSingleNode("//*[@id='result']/ul[" + i + "]/li[" + j + "]/div/div[1]/a/img"));
-					//商品名を取得
-					haphnName.Add(haphdoc.DocumentNode.SelectSingleNode("//*[@id='result']/ul[" + i + "]/li[" + j + "]/a"));
-					//発売日を取得
-					haphnRelease_date.Add(haphdoc.DocumentNode.SelectSingleNode("//*[@id='result']/ul[" + i + "]/li[" + j + "]/div/p"));
-
-					//URL部分だけ抜き取る
-					//商品画像のURLを追加
-					dsc.Product_imageuris.Add(haphnImage[index_counter].OuterHtml.Substring(10, haphnImage[index_counter].OuterHtml.IndexOf("alt") - 12));
-					//商品名を追加
-					dsc.Product_names.Add(haphnName[index_counter].InnerText);
-					//発売日を追加
-					dsc.Product_release_date.Add(haphnRelease_date[index_counter].InnerText);
-
-					index_counter++;
-				}
-			}
-
-			SearchResultForm srf = new SearchResultForm();
-			srf.datashareclass = dsc;
-			srf.ShowDialog(this);
-
-			if(DataShareC.Product_imageuris != null)
-			{
-				Stream resstream = await hc.GetStreamAsync(DataShareC.Product_imageuris[0]);
-				Image.FromStream(resstream).Save("ReplaceArtwork.png", ImageFormat.Png);
-
-				Replace_pictureBox.Image = ImageResize(Image.FromFile("ReplaceArtwork.png"), Replace_pictureBox.Size);
-			}
-
-			//アーティスト情報を取得
-			try
-			{
-				ReplaceArtist_textBox.Text = await GetArtistFromWeb(listView1.SelectedItems[0].SubItems[0].Text.Replace(".mp3", ""));
-			}
-			//曲が存在しなかったら
-			catch(NullReferenceException)
-			{
-				MessageBox.Show("検索された曲の歌詞は存在していません。", "検索エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-			}
+			if(File.Exists("ReplaceArtwork.png"))
+				ImageShow(null, Image.FromFile("ReplaceArtwork.png"));
 		}
 
+		private async void Search_button_Click(object sender, EventArgs e)
+		{
+			if(listView1.SelectedItems.Count > 0)
+			{
+				//ListViewで選択されたアイテムを処理が終わるまで保持しておく
+				ListViewItem listview_select_item = listView1.SelectedItems[0];
+				HttpClient hc = new HttpClient();
+				//URLエンコードをする
+				string Searchword_urlencoded = System.Web.HttpUtility.UrlEncode(KeyWordSearch_textBox.Text);
+				string rethtml;
+				HtmlAgilityPack.HtmlDocument haphdoc = new HtmlAgilityPack.HtmlDocument();
+
+				bool Waitflag = false;
+
+				do
+				{
+					//www.animate-onlineshop.jpにアクセスして、特定の言葉を検索する
+					//smt = 検索される文字列、spc = 検索されるカテゴリ 3は音楽、sl= 検索結果の表示件数
+					rethtml = await hc.GetStringAsync(@"http://www.animate-onlineshop.jp/products/list.php?smt=" + Searchword_urlencoded + "&spc=3&sl=100");
+					if(rethtml.Contains("※ただいま検索サーバが非常に混雑しております。時間を空けてお試し下さい"))
+						Waitflag = true;
+					else
+						Waitflag = false;
+					//検索がうまくいかなかった場合、処理を5秒待機させて再び
+					if(Waitflag)
+						await System.Threading.Tasks.Task.Delay(5000);
+				} while(rethtml.Contains("※ただいま検索サーバが非常に混雑しております。時間を空けてお試し下さい"));
+
+				//HTML形式の文字列をHTMLとして読み込み
+				haphdoc.LoadHtml(rethtml);
+
+				//ページ内の全商品を取得
+				HtmlAgilityPack.HtmlNodeCollection haphncProducts = haphdoc.DocumentNode.SelectNodes("//*[@id='result']/ul");
+				//商品画像
+				List<HtmlAgilityPack.HtmlNode> haphnImage = new List<HtmlAgilityPack.HtmlNode>();
+				//商品名
+				List<HtmlAgilityPack.HtmlNode> haphnName = new List<HtmlAgilityPack.HtmlNode>();
+				//発売日
+				List<HtmlAgilityPack.HtmlNode> haphnRelease_date = new List<HtmlAgilityPack.HtmlNode>();
+
+				//SearchResultFormに表示するためのデータを保持する
+				DataShareClass dsc = new DataShareClass();
+				//<ul class="product_horizontal_list clearfix"> この中に最大４つ商品情報が入っている
+				//<ul class="product_horizontal_list clearfix"> の数だけループ
+				//Listの添字として使用
+				int index_counter = 0;
+				for(int i = 1; i <= haphncProducts.Count; i++)
+				{
+					//<ul class="product_horizontal_list clearfix"> の中の <li class=""> の数を取得
+					HtmlAgilityPack.HtmlNodeCollection haphncProducts_details = haphdoc.DocumentNode.SelectNodes("//*[@id='result']/ul[" + i + "]/li");
+
+					for(int j = 1; j <= haphncProducts_details.Count; j++)
+					{
+						//商品画像を取得
+						haphnImage.Add(haphdoc.DocumentNode.SelectSingleNode("//*[@id='result']/ul[" + i + "]/li[" + j + "]/div/div[1]/a/img"));
+						//商品名を取得
+						haphnName.Add(haphdoc.DocumentNode.SelectSingleNode("//*[@id='result']/ul[" + i + "]/li[" + j + "]/a"));
+						//発売日を取得
+						haphnRelease_date.Add(haphdoc.DocumentNode.SelectSingleNode("//*[@id='result']/ul[" + i + "]/li[" + j + "]/div/p"));
+
+						//URL部分だけ抜き取る
+						//商品画像のURLを追加
+						dsc.Product_imageuris.Add(haphnImage[index_counter].OuterHtml.Substring(10, haphnImage[index_counter].OuterHtml.IndexOf("alt") - 12));
+						//商品名を追加
+						dsc.Product_names.Add(haphnName[index_counter].InnerText);
+						//発売日を追加
+						dsc.Product_release_date.Add(haphnRelease_date[index_counter].InnerText);
+
+						index_counter++;
+					}
+				}
+				
+				
+				SearchResultForm srf = new SearchResultForm();
+				//検索された曲のデータを他のフォームに渡す
+				srf.datashareclass = dsc;
+				//検索された曲のリストが書かれたフォームを表示
+				srf.ShowDialog(this);
+
+				//nullじゃなかったら画像を取得
+				if(DataShareC.Product_imageuris != null)
+				{
+					Stream resstream = await hc.GetStreamAsync(DataShareC.Product_imageuris[0]);
+					Image.FromStream(resstream).Save("ReplaceArtwork.png", ImageFormat.Png);
+
+					ReplaceArtwork_pictureBox.Image = ImageResize(Image.FromFile("ReplaceArtwork.png"), ReplaceArtwork_pictureBox.Size);
+				}
+
+				//アーティスト情報を取得
+				try
+				{
+					ReplaceArtist_textBox.Text = await GetArtistFromWeb(listview_select_item.Text.Replace(".mp3", ""));
+				}
+				//曲が存在しなかったら
+				catch(NullReferenceException)
+				{
+					MessageBox.Show("検索された曲の歌詞は存在していません。", "検索エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
+			}
+			else
+				MessageBox.Show("曲の選択をしてください。", "処理中断", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+		}
+
+		//タグの置き換え処理
 		private void changing_tag_button_Click(object sender, EventArgs e)
 		{
 			using(TagLib.File mp3 = TagLib.File.Create(listView1.SelectedItems[0].SubItems[1].Text))
 			{
+				//アクセスモードを書き換えに変更
 				mp3.Mode = TagLib.File.AccessMode.Write;
 
 				TagLib.Tag mp3tag = mp3.Tag;
-				mp3tag.AlbumArtists = new string[] { ReplaceArtist_textBox.Text };
+				mp3tag.Performers = new string[] { ReplaceArtist_textBox.Text };
 				TagLib.Picture artwork_picture = new TagLib.Picture(TagLib.ByteVector.FromPath("ReplaceArtwork.png"));
 				mp3tag.Pictures = new TagLib.IPicture[] { artwork_picture };
 
 				mp3.Save();
+
 				MessageBox.Show("タグの置き換え成功。", "処理完了", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+				ReplaceArtwork_pictureBox.Image = null;
+				ReplaceArtist_textBox.Text = "";
+				if(File.Exists("ReplaceArtwork.png"))
+					File.Delete("ReplaceArtwork.png");
 			}
 		}
 
+		#region "自作関数"
+
 		/// <summary>
-		/// 引数urlから画像をダウンロードし、新しいフォームに表示する。
+		/// 引数urlから画像をダウンロード、またはimgから画像を読み込み、新しいフォームに表示する。
 		/// どちらかの引数は必ず指定しなければならない。どちらも指定した場合、第一引数を優先して表示する。
 		/// </summary>
 		/// <param name="url">画像が格納されたURLを指定。省略可。</param>
@@ -376,7 +405,7 @@ namespace mp3tageditor
 
 			//画像表示のためのpictureboxを作成
 			PictureBox pb = new PictureBox();
-			pictureBox1.Size = windowsize;
+			//mp3artwork_pictureBox.Size = windowsize;
 
 			//先ほどダウンロードした画像をセット or ロードした画像をセット
 			pb.Image = ImageResize(imgdata, windowsize);
@@ -418,7 +447,7 @@ namespace mp3tageditor
 			HtmlAgilityPack.HtmlNode haphn;
 			haphd.LoadHtml(rethtml);
 
-			////*[@id='lyricList']
+			//検索結果の曲のリストを列挙するXpath - //*[@id='lyricList']
 			haphn = haphd.DocumentNode.SelectSingleNode("//*[@id='lyricList']");
 			List<string> HtmlInnerTexts = new List<string>();
 			TextBox tb = new TextBox();
@@ -432,10 +461,10 @@ namespace mp3tageditor
 
 				if(HtmlInnerTexts[i].Contains("歌：<a href="))
 				{
-					if(HtmlInnerTexts[i].Contains("("))
+					//おそらく声優情報がある かつ グループのアーティスト情報を取得する
+					//サンプル："歌：<a href='http://j-lyric.net/artist/a05a83d/'>ドレッシングふらわー(真中らぁら(茜屋日海夏)/緑風ふわり(佐藤あずさ)/ドロシー・ウェスト(澁谷梓希)/レオナ・ウェスト(若井友希)/東堂シオン(山北早紀)</a>"
+					if(HtmlInnerTexts[i].Contains(")/"))
 					{
-						//おそらく声優情報があるアーティスト情報を取得する
-						//サンプル："歌：<a href='http://j-lyric.net/artist/a05a83d/'>ドレッシングふらわー(真中らぁら(茜屋日海夏)/緑風ふわり(佐藤あずさ)/ドロシー・ウェスト(澁谷梓希)/レオナ・ウェスト(若井友希)/東堂シオン(山北早紀)</a>"
 						string Artist_All = HtmlInnerTexts[i].Substring(
 							HtmlInnerTexts[i].IndexOf(">") + 1, 
 							Math.Abs((HtmlInnerTexts[i].IndexOf(">") + 1) - HtmlInnerTexts[i].LastIndexOf("<")));
@@ -458,10 +487,20 @@ namespace mp3tageditor
 						//グループ名と声優情報が繋がれたアーティスト情報を返す
 						return Artist_Group + "(" + Artist_CV + ")";
 					}
+					//おそらく声優情報があるアーティスト情報を取得して返す
+					//サンプル：<a href='http://j-lyric.net/artist/a059c3b/'>ファルル(赤崎千夏)</a>
+					else if(HtmlInnerTexts[i].Contains("("))
+					{
+						string Artist_All = HtmlInnerTexts[i].Substring(
+							HtmlInnerTexts[i].IndexOf(">") + 1,
+							Math.Abs((HtmlInnerTexts[i].IndexOf(">") + 1) - HtmlInnerTexts[i].LastIndexOf("<")));
+
+						return Artist_All.Replace("(", "(CV.");
+					}
+					//おそらく声優情報がない、アーティスト情報を取得して返す
+					//サンプル：<a href="http://j-lyric.net/artist/a05a874/">ドレッシングふらわー</a>
 					else if(i == (tb.Lines.Length - 1))
 					{
-						//おそらく声優情報がないアーティスト情報を取得して、返す
-						//サンプル：<a href="http://j-lyric.net/artist/a05a874/">ドレッシングふらわー</a>
 						return HtmlInnerTexts[i].Substring(
 							HtmlInnerTexts[i].IndexOf(">") + 1,
 							Math.Abs((HtmlInnerTexts[i].IndexOf(">") + 1) - HtmlInnerTexts[i].LastIndexOf("<")));
@@ -472,6 +511,8 @@ namespace mp3tageditor
 			return null;
 		}
 
+		#endregion
+
 		/// <summary>
 		/// 一次元：mp3ファイルのパス。二次元要素のIDとして使用する。 二次元：mp3から読み込んだアートワークをpictureboxに表示するための画像のパス
 		/// </summary>
@@ -480,23 +521,11 @@ namespace mp3tageditor
 		{
 			get { return tempimagefilepaths; }
 		}
-		/// <summary>
-		/// インターネットからダウンロードをキャッシュとして使用する画像のパス
-		/// </summary>
-		private static List<string> cacheimagefilepaths = new List<string>();
-		public static List<string> CacheImageFilePaths
-		{
-			get { return cacheimagefilepaths; }
-		}
 		private static DataShareClass dsclass;
 		public static DataShareClass DataShareC
 		{
 			set { dsclass = value; }
 			get { return dsclass; }
-		}
-
-		private void button1_Click(object sender, EventArgs e)
-		{
 		}
 	}
 }

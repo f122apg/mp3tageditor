@@ -31,6 +31,8 @@ namespace mp3tageditor
 				}
 			}
 
+			OK_button.Enabled = true;
+			Cancel_button.Enabled = true;
 			MessageBox.Show("画像取得処理終了。", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 
@@ -57,7 +59,9 @@ namespace mp3tageditor
 
 		private void Cancel_button_Click(object sender, EventArgs e)
 		{
-			Form1.DataShareC.Product_imageuris = null;
+			//キャンセルボタンを押したことを示す、nullを入れる
+			dsclass.Product_imageuris = null;
+			Form1.DataShareC = dsclass;
 
 			imageList1.Images.Clear();
 			listView1.Clear();
