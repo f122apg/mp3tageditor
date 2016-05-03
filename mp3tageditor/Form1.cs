@@ -4,6 +4,7 @@ using System.Drawing.Imaging;
 using System.Windows.Forms;
 using System.Net.Http;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -247,6 +248,7 @@ namespace mp3tageditor
 
 		private async void Search_button_Click(object sender, EventArgs e)
 		{
+			Console.WriteLine(listView1.SelectedItems.Count);
 			if(listView1.SelectedItems.Count > 0 && KeyWordSearch_textBox.Text != "")
 			{
 				//ListViewで選択されたアイテムを処理が終わるまで保持しておく
@@ -263,6 +265,7 @@ namespace mp3tageditor
 				{
 					//www.animate-onlineshop.jpにアクセスして、特定の言葉を検索する
 					//smt = 検索される文字列、spc = 検索されるカテゴリ 3は音楽、sl= 検索結果の表示件数
+
 					rethtml = await hc.GetStringAsync(@"http://www.animate-onlineshop.jp/products/list.php?smt=" + Searchword_urlencoded + "&spc=3&sl=100");
 					if(rethtml.Contains("※ただいま検索サーバが非常に混雑しております。時間を空けてお試し下さい"))
 						Waitflag = true;
@@ -276,6 +279,8 @@ namespace mp3tageditor
 				//HTML形式の文字列をHTMLとして読み込み
 				haphdoc.LoadHtml(rethtml);
 
+				//検索結果の件数を取得
+				HtmlAgilityPack.HtmlNode haphnSearchResultCount = haphdoc.DocumentNode.SelectSingleNode(@"//*[@id='title_in']");
 				//ページ内の全商品を取得
 				HtmlAgilityPack.HtmlNodeCollection haphncProducts = haphdoc.DocumentNode.SelectNodes("//*[@id='result']/ul");
 				//商品画像
@@ -316,8 +321,12 @@ namespace mp3tageditor
 						index_counter++;
 					}
 				}
-				
-				
+
+				//正規表現 RegexOptions.RightToLeftにより右から左に検索し、件数を取得する
+				//[0-9]+ = 0から9までの数字が1回以上繰り返し
+				Match rm = Regex.Match(haphnSearchResultCount.InnerText, "[0-9]+", RegexOptions.RightToLeft);
+				dsc.SearchResultCount = Convert.ToInt32(rm.Value);
+
 				SearchResultForm srf = new SearchResultForm();
 				//検索された曲のデータを他のフォームに渡す
 				srf.datashareclass = dsc;
@@ -344,8 +353,10 @@ namespace mp3tageditor
 					MessageBox.Show("検索された曲の歌詞は存在していません。", "検索エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				}
 			}
-			else
+			else if(listView1.SelectedItems.Count == 0 && KeyWordSearch_textBox.Text != "")
 				MessageBox.Show("曲の選択をしてください。", "処理中断", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+			else
+				MessageBox.Show("検索するキーワードを入力してください。", "処理中断", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 		}
 
 		//タグの置き換え処理
@@ -360,7 +371,9 @@ namespace mp3tageditor
 				TagLib.Tag mp3tag = mp3.Tag;
 				//アーティストタグ追加
 				mp3tag.Performers = new string[] { ReplaceArtist_textBox.Text };
-
+				//コメント、コピーライト削除
+				mp3tag.Comment = "";
+				mp3tag.Copyright = "";
 				if(File.Exists("ReplaceArtwork.png"))
 				{
 					TagLib.Picture artwork_picture = new TagLib.Picture(TagLib.ByteVector.FromPath("ReplaceArtwork.png"));
@@ -542,6 +555,22 @@ namespace mp3tageditor
 		{
 			set { dsclass = value; }
 			get { return dsclass; }
+		}
+
+		private void button1_Click(object sender, EventArgs e)
+		{
+		}
+
+		private int CountKeywordInText(string keyword, string text, int counter = 0)
+		{
+			if(text.Contains(keyword))
+			{
+				counter++;
+				int counted = CountKeywordInText(keyword, text.Substring(text.IndexOf(keyword) + keyword.Length), counter);
+				return counted;
+			}
+			else
+				return counter;
 		}
 	}
 }
