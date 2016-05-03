@@ -259,7 +259,7 @@ namespace mp3tageditor
 				HttpClient hc = new HttpClient();
 				//URLエンコードをする
 				string Searchword_urlencoded = System.Web.HttpUtility.UrlEncode(KeyWordSearch_textBox.Text);
-				string rethtml;
+				string rethtml = "";
 				HtmlAgilityPack.HtmlDocument haphdoc = new HtmlAgilityPack.HtmlDocument();
 
 				bool Waitflag = false;
@@ -268,8 +268,8 @@ namespace mp3tageditor
 				{
 					//www.animate-onlineshop.jpにアクセスして、特定の言葉を検索する
 					//smt = 検索される文字列、spc = 検索されるカテゴリ 3は音楽、sl= 検索結果の表示件数
-
 					rethtml = await hc.GetStringAsync(@"http://www.animate-onlineshop.jp/products/list.php?smt=" + Searchword_urlencoded + "&spc=3&sl=100");
+
 					if(rethtml.Contains("※ただいま検索サーバが非常に混雑しております。時間を空けてお試し下さい"))
 						Waitflag = true;
 					else
@@ -558,22 +558,6 @@ namespace mp3tageditor
 		{
 			set { dsclass = value; }
 			get { return dsclass; }
-		}
-
-		private void button1_Click(object sender, EventArgs e)
-		{
-		}
-
-		private int CountKeywordInText(string keyword, string text, int counter = 0)
-		{
-			if(text.Contains(keyword))
-			{
-				counter++;
-				int counted = CountKeywordInText(keyword, text.Substring(text.IndexOf(keyword) + keyword.Length), counter);
-				return counted;
-			}
-			else
-				return counter;
 		}
 	}
 }
