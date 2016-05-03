@@ -142,7 +142,7 @@
 			// 
 			// mp3artwork_pictureBox
 			// 
-			this.mp3artwork_pictureBox.BackColor = System.Drawing.SystemColors.Control;
+			this.mp3artwork_pictureBox.BackColor = System.Drawing.SystemColors.ActiveCaption;
 			this.mp3artwork_pictureBox.Location = new System.Drawing.Point(12, 421);
 			this.mp3artwork_pictureBox.Name = "mp3artwork_pictureBox";
 			this.mp3artwork_pictureBox.Size = new System.Drawing.Size(160, 138);
@@ -213,7 +213,7 @@
 			// 
 			// ReplaceArtwork_pictureBox
 			// 
-			this.ReplaceArtwork_pictureBox.BackColor = System.Drawing.SystemColors.Control;
+			this.ReplaceArtwork_pictureBox.BackColor = System.Drawing.SystemColors.ActiveCaption;
 			this.ReplaceArtwork_pictureBox.Location = new System.Drawing.Point(276, 421);
 			this.ReplaceArtwork_pictureBox.Name = "ReplaceArtwork_pictureBox";
 			this.ReplaceArtwork_pictureBox.Size = new System.Drawing.Size(160, 139);

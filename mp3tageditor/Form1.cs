@@ -199,6 +199,7 @@ namespace mp3tageditor
 					}
 				}
 
+				//選択された曲の曲名をtextboxに入れる
 				KeyWordSearch_textBox.Text = listView1.SelectedItems[0].SubItems[0].Text.Replace(".mp3", "");
 			}
 		}
@@ -246,7 +247,7 @@ namespace mp3tageditor
 
 		private async void Search_button_Click(object sender, EventArgs e)
 		{
-			if(listView1.SelectedItems.Count > 0)
+			if(listView1.SelectedItems.Count > 0 && KeyWordSearch_textBox.Text != "")
 			{
 				//ListViewで選択されたアイテムを処理が終わるまで保持しておく
 				ListViewItem listview_select_item = listView1.SelectedItems[0];
@@ -352,14 +353,22 @@ namespace mp3tageditor
 		{
 			using(TagLib.File mp3 = TagLib.File.Create(listView1.SelectedItems[0].SubItems[1].Text))
 			{
-				//アクセスモードを書き換えに変更
+				//アクセスモードを書き込みモードに変更
 				mp3.Mode = TagLib.File.AccessMode.Write;
 
+				//タグ取得
 				TagLib.Tag mp3tag = mp3.Tag;
+				//アーティストタグ追加
 				mp3tag.Performers = new string[] { ReplaceArtist_textBox.Text };
-				TagLib.Picture artwork_picture = new TagLib.Picture(TagLib.ByteVector.FromPath("ReplaceArtwork.png"));
-				mp3tag.Pictures = new TagLib.IPicture[] { artwork_picture };
 
+				if(File.Exists("ReplaceArtwork.png"))
+				{
+					TagLib.Picture artwork_picture = new TagLib.Picture(TagLib.ByteVector.FromPath("ReplaceArtwork.png"));
+					//アートワークを追加
+					mp3tag.Pictures = new TagLib.IPicture[] { artwork_picture };
+				}
+				
+				//タグを保存
 				mp3.Save();
 
 				MessageBox.Show("タグの置き換え成功。", "処理完了", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -367,7 +376,40 @@ namespace mp3tageditor
 				ReplaceArtwork_pictureBox.Image = null;
 				ReplaceArtist_textBox.Text = "";
 				if(File.Exists("ReplaceArtwork.png"))
-					File.Delete("ReplaceArtwork.png");
+				{
+					mp3artwork_pictureBox.Image = null;
+
+					if(File.Exists(TempImageFilePaths[listView1.SelectedItems[0].Index][1]))
+						File.Delete(TempImageFilePaths[listView1.SelectedItems[0].Index][1]);
+
+					FileInfo fi = new FileInfo("ReplaceArtwork.png");
+
+					//TempImageFilePaths[n][1]にすでにアートワークのパスがあれば、リネーム処理を行う
+					if(TempImageFilePaths[listView1.SelectedItems[0].Index][1] != null)
+					{
+						//ReplaceArtwork.pngをタグを設定した曲のアートワークとしてtmpxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxにリネームする
+						fi.MoveTo(TempImageFilePaths[listView1.SelectedItems[0].Index][1].Substring(
+							TempImageFilePaths[listView1.SelectedItems[0].Index][1].IndexOf(@"\") + 1));
+						//ファイルに属性、隠しファイルを付与
+						fi.Attributes = FileAttributes.Hidden;
+					}
+					//TempImageFilePaths[n][1]にアートワークのパスがなければ、Guidを生成しリネーム処理を行う
+					else
+					{
+						//Guidを生成
+						Guid guid = Guid.NewGuid();
+						TempImageFilePaths[listView1.SelectedItems[0].Index][1] = "tmp" + guid.ToString() + ".png";
+						//ReplaceArtwork.pngをタグを設定した曲のアートワークとしてtmpxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxにリネームする
+						fi.MoveTo(TempImageFilePaths[listView1.SelectedItems[0].Index][1].Substring(
+							TempImageFilePaths[listView1.SelectedItems[0].Index][1].IndexOf(@"\") + 1));
+						//ファイルに属性、隠しファイルを付与
+						fi.Attributes = FileAttributes.Hidden;
+					}
+					
+					mp3artwork_pictureBox.Image = ImageResize(
+						Image.FromFile(TempImageFilePaths[listView1.SelectedItems[0].Index][1]), 
+						mp3artwork_pictureBox.Size); 
+				}
 			}
 		}
 
@@ -461,41 +503,15 @@ namespace mp3tageditor
 
 				if(HtmlInnerTexts[i].Contains("歌：<a href="))
 				{
-					//おそらく声優情報がある かつ グループのアーティスト情報を取得する
-					//サンプル："歌：<a href='http://j-lyric.net/artist/a05a83d/'>ドレッシングふらわー(真中らぁら(茜屋日海夏)/緑風ふわり(佐藤あずさ)/ドロシー・ウェスト(澁谷梓希)/レオナ・ウェスト(若井友希)/東堂シオン(山北早紀)</a>"
-					if(HtmlInnerTexts[i].Contains(")/"))
-					{
-						string Artist_All = HtmlInnerTexts[i].Substring(
-							HtmlInnerTexts[i].IndexOf(">") + 1, 
-							Math.Abs((HtmlInnerTexts[i].IndexOf(">") + 1) - HtmlInnerTexts[i].LastIndexOf("<")));
-						//アーティストのグループ名だけを取得する
-						//この場合だとサンプルのドレッシングふらわーを取得
-						string Artist_Group = Artist_All.Substring(0, Artist_All.IndexOf("("));
-						//アーティストのキャラクター名および、声優だけを取得する
-						//この場合だとサンプルの真中らぁら(茜屋日海夏)/緑風ふわり(佐藤あずさ)/ドロシー・ウェスト(澁谷梓希)/レオナ・ウェスト(若井友希)/東堂シオン(山北早紀)を取得
-						string Artist_CV = Artist_All.Substring(Artist_All.IndexOf("(") + 1);
-						//Artist_CVに代入されている声優を一人づつ配列に代入する
-						string[] Artist_CVs = Artist_CV.Split(new char[] { '/' });
-						Artist_CV = null;
-						
-						//Artist_CVにArtist_CVsの ( を (CV. に置き換えて、最後に & を付ける
-						for(int j = 0; j < Artist_CVs.Length; j++)
-							Artist_CV += Artist_CVs[j].Replace("(", "(CV.") + "&";
-
-						//一人づつだった声優情報をすべてつなげる
-						Artist_CV = Artist_CV.Remove(Artist_CV.Length - 1, 1);
-						//グループ名と声優情報が繋がれたアーティスト情報を返す
-						return Artist_Group + "(" + Artist_CV + ")";
-					}
 					//おそらく声優情報があるアーティスト情報を取得して返す
 					//サンプル：<a href='http://j-lyric.net/artist/a059c3b/'>ファルル(赤崎千夏)</a>
-					else if(HtmlInnerTexts[i].Contains("("))
+					if(HtmlInnerTexts[i].Contains("("))
 					{
 						string Artist_All = HtmlInnerTexts[i].Substring(
 							HtmlInnerTexts[i].IndexOf(">") + 1,
 							Math.Abs((HtmlInnerTexts[i].IndexOf(">") + 1) - HtmlInnerTexts[i].LastIndexOf("<")));
 
-						return Artist_All.Replace("(", "(CV.");
+						return Artist_All.Replace("(", "(CV.").Replace("/", "&");
 					}
 					//おそらく声優情報がない、アーティスト情報を取得して返す
 					//サンプル：<a href="http://j-lyric.net/artist/a05a874/">ドレッシングふらわー</a>
