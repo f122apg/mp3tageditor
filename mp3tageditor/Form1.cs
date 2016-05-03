@@ -47,6 +47,9 @@ namespace mp3tageditor
 			{
 				File.Delete(filepath);
 			}
+			//もしReplaceArtwork.pngが存在していたら削除する
+			if(File.Exists("ReplaceArtwork.png"))
+				File.Delete("ReplaceArtwork.png");
 		}
 
 		private void listView1_DragEnter(object sender, DragEventArgs e)

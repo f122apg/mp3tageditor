@@ -3,7 +3,6 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Net.Http;
 using System.IO;
-using System.Threading;
 using System.Security.Permissions;
 
 namespace mp3tageditor
@@ -95,6 +94,7 @@ namespace mp3tageditor
 			SearchStop_button.Enabled = false;
 		}
 
+		//閉じるボタン無効
 		protected override CreateParams CreateParams
 		{
 			[SecurityPermission(SecurityAction.Demand,

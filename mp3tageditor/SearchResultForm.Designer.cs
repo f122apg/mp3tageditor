@@ -50,6 +50,7 @@
             this.Product_release_date_columnHeader});
 			this.listView1.FullRowSelect = true;
 			this.listView1.GridLines = true;
+			this.listView1.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
 			this.listView1.Location = new System.Drawing.Point(13, 12);
 			this.listView1.MultiSelect = false;
 			this.listView1.Name = "listView1";
